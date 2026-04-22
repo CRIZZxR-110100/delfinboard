@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Loader2, BookOpen, Target, BarChart2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import './Login.css';
@@ -83,8 +83,49 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card glass-panel fade-in">
+    <div className="login-wrapper">
+      {/* Landing Page Section */}
+      <div className="landing-section fade-in">
+        <div className="landing-content">
+          <h1 className="landing-title">Bienvenido a DelfinBoard</h1>
+          <p className="landing-subtitle">
+            Tu plataforma integral para el seguimiento y gestión del rendimiento académico.
+          </p>
+          
+          <div className="landing-features">
+            <div className="feature-item">
+              <div className="feature-icon"><BookOpen size={24} /></div>
+              <div className="feature-text">
+                <h3>Gestión de Materias</h3>
+                <p>Organiza tu retícula y da seguimiento a tus calificaciones parciales y finales.</p>
+              </div>
+            </div>
+            
+            <div className="feature-item">
+              <div className="feature-icon"><Target size={24} /></div>
+              <div className="feature-text">
+                <h3>Control de Tareas</h3>
+                <p>Administra tus actividades, fechas de entrega y estado de cada tarea.</p>
+              </div>
+            </div>
+            
+            <div className="feature-item">
+              <div className="feature-icon"><BarChart2 size={24} /></div>
+              <div className="feature-text">
+                <h3>Análisis de Rendimiento</h3>
+                <p>Visualiza tu progreso académico mediante gráficos e indicadores clave.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="landing-footer">
+          <p>&copy; {new Date().getFullYear()} DelfinBoard. Todos los derechos reservados.</p>
+        </div>
+      </div>
+
+      {/* Login Section */}
+      <div className="login-section">
+        <div className="login-card glass-panel fade-in">
         <div className="login-header">
           <h2>{isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}</h2>
           <p className="text-muted">
@@ -181,6 +222,7 @@ const Login = () => {
               {isLogin ? 'Regístrate aquí' : 'Inicia sesión'}
             </button>
           </p>
+        </div>
         </div>
       </div>
     </div>
