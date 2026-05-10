@@ -3,8 +3,8 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { tutorAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Users, AlertTriangle, BookOpen, Send, AlertOctagon, X, User } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line, CartesianGrid } from 'recharts';
+import { Users, AlertTriangle, BookOpen, Send, AlertOctagon, X, User, TrendingUp, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
@@ -118,18 +118,18 @@ const TutorDashboard = () => {
           onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
           <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(var(--secondary), 0.1)', color: 'hsl(var(--secondary))' }}>
-            <BookOpen size={24} />
+            <CheckCircle size={24} />
           </div>
           <div className="stat-info">
-            <h3>{stats?.globalFailRate || 0}%</h3>
-            <p>Porcentaje General de Reprobados</p>
+            <h3>{stats?.complianceRate || 0}%</h3>
+            <p>Tasa de Cumplimiento</p>
           </div>
         </div>
       </div>
 
+      {/* Fila 1: Riesgo y Evolución */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
         
-        {/* Dona de Panorama de Riesgos */}
         <div className="glass-panel p-4">
           <h2 className="section-title">Alineación de Grupo: Salud Analizada</h2>
           <div style={{ height: 300, width: '100%' }}>
@@ -157,11 +157,27 @@ const TutorDashboard = () => {
           </div>
         </div>
 
-        {/* Panel de Enfoque de Tareas */}
         <div className="glass-panel p-4">
-          <h2 className="section-title">
-             Esfuerzo del Grupo: Cumplimiento de Tareas
-          </h2>
+          <h2 className="section-title">Evolución del Rendimiento Grupal</h2>
+          <div style={{ height: 300, width: '100%' }}>
+            <ResponsiveContainer>
+              <LineChart data={stats?.performanceEvolution || []}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsla(var(--text), 0.1)" />
+                <XAxis dataKey="name" />
+                <YAxis domain={[0, 10]} />
+                <Tooltip />
+                <Line type="monotone" dataKey="promedio" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 6 }} activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Fila 2: Tareas y Promedio por Materia */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        
+        <div className="glass-panel p-4">
+          <h2 className="section-title">Esfuerzo del Grupo: Cumplimiento de Tareas</h2>
           <div style={{ height: 300, width: '100%' }}>
             {hasTasks ? (
               <ResponsiveContainer>
@@ -178,10 +194,24 @@ const TutorDashboard = () => {
               </ResponsiveContainer>
             ) : (
               <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                 <p className="text-muted" style={{ margin: 0 }}>Aún no hay tareas asignadas o registradas</p>
-                 <small style={{ color: 'hsl(var(--text-muted))', opacity: 0.7, marginTop: '5px' }}>por los alumnos de este grupo.</small>
+                 <p className="text-muted">Aún no hay tareas registradas</p>
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="glass-panel p-4">
+          <h2 className="section-title">Promedio General por Materia</h2>
+          <div style={{ height: 300, width: '100%' }}>
+            <ResponsiveContainer>
+              <BarChart data={stats?.allSubjects || []} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsla(var(--text), 0.1)" />
+                <XAxis type="number" domain={[0, 10]} />
+                <YAxis dataKey="name" type="category" width={100} fontSize={12} />
+                <Tooltip />
+                <Bar dataKey="averageGrade" fill="hsl(var(--secondary))" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
