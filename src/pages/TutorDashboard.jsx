@@ -19,6 +19,8 @@ const TutorDashboard = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [msgContent, setMsgContent] = useState('');
   const [activeStatModal, setActiveStatModal] = useState(null); // 'risk'
+  const [activeChartModal, setActiveChartModal] = useState(false);
+  const [chartModalData, setChartModalData] = useState({ title: '', students: [], type: '', dataKey: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,6 +55,49 @@ const TutorDashboard = () => {
     }
   };
 
+  const handleChartClick = (type, data) => {
+    if (!data) return;
+    const dataKey = data.name || data;
+    let filteredStudents = [];
+    let title = '';
+
+    if (type === 'grades') {
+      title = `Alumnos con Promedio: ${dataKey}`;
+      filteredStudents = students.filter(s => {
+        const score = parseFloat(s.average) || 0;
+        if (dataKey.includes('Excelente')) return score >= 90;
+        if (dataKey.includes('Bueno')) return score >= 80 && score < 90;
+        if (dataKey.includes('Regular')) return score >= 70 && score < 80;
+        if (dataKey.includes('Deficiente')) return score < 70;
+        return false;
+      });
+    } else if (type === 'tasks') {
+      title = `Alumnos con Tareas: ${dataKey}`;
+      filteredStudents = students.filter(s => {
+        if (!s.taskStats) return false;
+        if (dataKey === 'Entregadas') return s.taskStats.completed > 0;
+        if (dataKey === 'En Tiempo') return s.taskStats.pending > 0;
+        if (dataKey === 'Vencidas') return s.taskStats.overdue > 0;
+        return false;
+      });
+    } else if (type === 'risk') {
+      title = `Alumnos en Estado: ${dataKey}`;
+      filteredStudents = students.filter(s => s.academicStatus === dataKey);
+    } else if (type === 'failVolume') {
+      title = `Alumnos con ${dataKey}`;
+      filteredStudents = students.filter(s => {
+        if (dataKey === '0 Reprobadas') return s.failedSubjects === 0;
+        if (dataKey === '1 Reprobada') return s.failedSubjects === 1;
+        if (dataKey === '2 Reprobadas') return s.failedSubjects === 2;
+        if (dataKey === '3+ Reprobadas') return s.failedSubjects >= 3;
+        return false;
+      });
+    }
+
+    setChartModalData({ title, students: filteredStudents, type, dataKey });
+    setActiveChartModal(true);
+  };
+
   if (loading) return <div className="p-4 text-center">Cargando métricas...</div>;
 
   // Calculos Analíticos Locales de Frontend
@@ -71,182 +116,92 @@ const TutorDashboard = () => {
   const hasTasks = taskDistribution.some(t => t.value > 0);
 
   return (
-    <div className="dashboard fade-in">
-      <header className="dashboard-header">
-        <h1>DefinBoard Tutor</h1>
-        <p className="text-muted">Análisis global y seguimiento académico de tutorados del semestre.</p>
+    <div className="tutor-viewport-container fade-in">
+      <header className="tutor-viewport-header">
+        <h1 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>DelfinBoard Tutor</h1>
+        <p className="text-muted" style={{ fontSize: '0.9rem' }}>Análisis global y seguimiento académico de tutorados del semestre.</p>
       </header>
 
-      <div className="stats-grid">
+      <div className="tutor-viewport-stats">
         <div 
           className="stat-card glass-panel" 
-          style={{ cursor: 'pointer', transition: 'all 0.2s' }} 
+          style={{ cursor: 'pointer', transition: 'all 0.2s', padding: '1rem' }} 
           onClick={() => navigate('/tutor/alumnos')}
           onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(var(--primary), 0.1)', color: 'hsl(var(--primary))' }}>
-            <Users size={24} />
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(var(--primary), 0.1)', color: 'hsl(var(--primary))', width: 40, height: 40 }}>
+            <Users size={20} />
           </div>
           <div className="stat-info">
-            <h3>{stats?.totalStudents || 0}</h3>
-            <p>Alumnos Tutorados</p>
+            <h3 style={{ fontSize: '1.25rem' }}>{stats?.totalStudents || 0}</h3>
+            <p style={{ fontSize: '0.8rem' }}>Alumnos Tutorados</p>
           </div>
         </div>
 
         <div 
           className="stat-card glass-panel" 
-          style={{ cursor: 'pointer', transition: 'all 0.2s' }} 
+          style={{ cursor: 'pointer', transition: 'all 0.2s', padding: '1rem' }} 
           onClick={() => setActiveStatModal('risk')}
           onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(var(--error), 0.1)', color: 'hsl(var(--error))' }}>
-            <AlertTriangle size={24} />
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(var(--error), 0.1)', color: 'hsl(var(--error))', width: 40, height: 40 }}>
+            <AlertTriangle size={20} />
           </div>
           <div className="stat-info">
-            <h3>{stats?.studentsAtRisk || 0}</h3>
-            <p>Alumnos en Riesgo</p>
+            <h3 style={{ fontSize: '1.25rem' }}>{stats?.studentsAtRisk || 0}</h3>
+            <p style={{ fontSize: '0.8rem' }}>Alumnos en Riesgo</p>
           </div>
         </div>
 
         <div 
           className="stat-card glass-panel" 
-          style={{ cursor: 'pointer', transition: 'all 0.2s' }} 
+          style={{ cursor: 'pointer', transition: 'all 0.2s', padding: '1rem' }} 
           onClick={() => navigate('/tutor/materias')}
           onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(var(--secondary), 0.1)', color: 'hsl(var(--secondary))' }}>
-            <CheckCircle size={24} />
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(var(--secondary), 0.1)', color: 'hsl(var(--secondary))', width: 40, height: 40 }}>
+            <CheckCircle size={20} />
           </div>
           <div className="stat-info">
-            <h3>{stats?.complianceRate || 0}%</h3>
-            <p>Tasa de Cumplimiento</p>
+            <h3 style={{ fontSize: '1.25rem' }}>{stats?.complianceRate || 0}%</h3>
+            <p style={{ fontSize: '0.8rem' }}>Tasa de Cumplimiento</p>
           </div>
         </div>
       </div>
 
-      {/* Fila 1: Riesgo y Evolución */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-        
-        <div className="glass-panel p-4">
-          <h2 className="section-title">Alineación de Grupo: Salud Analizada</h2>
-          <div style={{ height: 300, width: '100%' }}>
-            {riskData.length > 0 ? (
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie
-                    data={riskData}
-                    innerRadius={80}
-                    outerRadius={110}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {riskData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Tutorados']} />
-                  <Legend verticalAlign="bottom" height={36} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-               <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p className="text-muted">Procesando datos...</p></div>
-            )}
-          </div>
-        </div>
-
-        <div className="glass-panel p-4">
-          <h2 className="section-title">Evolución del Rendimiento Grupal</h2>
-          <div style={{ height: 300, width: '100%' }}>
-            <ResponsiveContainer>
-              <LineChart data={stats?.performanceEvolution || []}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsla(var(--text), 0.1)" />
-                <XAxis dataKey="name" />
-                <YAxis domain={[0, 10]} />
-                <Tooltip />
-                <Line type="monotone" dataKey="promedio" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 6 }} activeDot={{ r: 8 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Fila 2: Tareas y Promedio por Materia */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-        
-        <div className="glass-panel p-4">
-          <h2 className="section-title">Esfuerzo del Grupo: Cumplimiento de Tareas</h2>
-          <div style={{ height: 300, width: '100%' }}>
-            {hasTasks ? (
-              <ResponsiveContainer>
-                <BarChart data={taskDistribution}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => [`${value} Tareas`, 'Frecuencia']} />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                     {taskDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                     ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                 <p className="text-muted">Aún no hay tareas registradas</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="glass-panel p-4">
-          <h2 className="section-title">Promedio General por Materia</h2>
-          <div style={{ height: 300, width: '100%' }}>
-            <ResponsiveContainer>
-              <BarChart data={stats?.allSubjects || []} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsla(var(--text), 0.1)" />
-                <XAxis type="number" domain={[0, 10]} />
-                <YAxis dataKey="name" type="category" width={100} fontSize={12} />
-                <Tooltip />
-                <Bar dataKey="averageGrade" fill="hsl(var(--secondary))" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      <div className="tutor-grid">
-        <div className="glass-panel p-4" style={{ maxWidth: '100%', overflow: 'hidden' }}>
+      <div className="tutor-viewport-grid">
+        {/* Tarjeta 1: Tabla de Alumnos */}
+        <div className="tutor-viewport-card glass-panel">
           <h2 className="section-title">Resumen de Tutorados</h2>
-          <div className="table-container" style={{ width: '100%', overflowX: 'auto' }}>
-            <table className="data-table" style={{ minWidth: '700px' }}>
+          <div className="tutor-viewport-table-container">
+            <table className="data-table" style={{ width: '100%', fontSize: '0.85rem' }}>
               <thead>
                 <tr>
                   <th>Alumno</th>
-                  <th>Promedio</th>
-                  <th>Materias Activas</th>
-                  <th>Nivel Riesgo</th>
-                  <th>Acciones Rápidas</th>
+                  <th>Prom.</th>
+                  <th>Estado</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody>
                 {students.map(s => (
                   <tr key={s.id} style={s.hasCriticalAlert ? { backgroundColor: 'hsla(0, 84%, 60%, 0.05)' } : {}}>
-                    <td>
+                    <td style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.name}>
                       {s.name}
-                      {s.hasCriticalAlert && <AlertOctagon size={14} style={{ color: 'hsl(var(--error))', marginLeft: '0.5rem', display: 'inline' }} title="Alerta Crítica: Reprobación Constante" />}
+                      {s.hasCriticalAlert && <AlertOctagon size={12} style={{ color: 'hsl(var(--error))', marginLeft: '0.25rem', display: 'inline' }} />}
                     </td>
-                    <td>{s.average > 0 ? s.average : 'N/A'}</td>
-                    <td>{s.activeSubjects} mat.</td>
+                    <td>{s.average > 0 ? s.average : '-'}</td>
                     <td>
-                      <span className={`badge badge-risk-${s.academicStatus === 'Riesgo Alto' ? 'alto' : s.academicStatus === 'En Curso' ? 'medio' : 'bajo'}`}>
+                      <span className={`badge badge-risk-${s.academicStatus === 'Riesgo Alto' ? 'alto' : s.academicStatus === 'En Curso' ? 'medio' : 'bajo'}`} style={{ padding: '0.15rem 0.4rem', fontSize: '0.7rem' }}>
                         {s.academicStatus}
                       </span>
                     </td>
                     <td>
-                      <button onClick={() => setSelectedStudent(s)} className="btn-icon">
-                        <Send size={16} /> Mensaje
+                      <button onClick={() => setSelectedStudent(s)} className="btn-icon" style={{ padding: '0.25rem' }}>
+                        <Send size={14} />
                       </button>
                     </td>
                   </tr>
@@ -255,10 +210,128 @@ const TutorDashboard = () => {
             </table>
           </div>
         </div>
+
+        {/* Tarjeta 2: Distribución de Promedios (Movido hacia arriba) */}
+        <div className="tutor-viewport-card glass-panel">
+          <h2 className="section-title">Distribución Promedios</h2>
+          <div className="tutor-viewport-content">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats?.gradeDistribution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Frecuencia']} />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {stats?.gradeDistribution?.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color} 
+                      className="interactive-chart-element" 
+                      onClick={() => handleChartClick('grades', entry)} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Tarjeta 3: Gráfica de Salud */}
+        <div className="tutor-viewport-card glass-panel">
+          <h2 className="section-title">Alineación de Grupo</h2>
+          <div className="tutor-viewport-content">
+            {riskData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={riskData} innerRadius="50%" outerRadius="80%" paddingAngle={5} dataKey="value">
+                    {riskData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color} 
+                        className="interactive-chart-element" 
+                        onClick={() => handleChartClick('risk', entry)} 
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Tutorados']} />
+                  <Legend verticalAlign="bottom" height={24} iconSize={10} wrapperStyle={{ fontSize: '0.8rem' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p className="text-muted">Procesando...</p></div>
+            )}
+          </div>
+        </div>
+
+        {/* Tarjeta 4: Evolución de Rendimiento */}
+        <div className="tutor-viewport-card glass-panel">
+          <h2 className="section-title">Evolución de Rendimiento</h2>
+          <div className="tutor-viewport-content">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={stats?.performanceEvolution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsla(var(--text), 0.1)" />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis domain={[0, 10]} tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Line type="monotone" dataKey="promedio" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Tarjeta 5: Volumen de Reprobación */}
+        <div className="tutor-viewport-card glass-panel">
+          <h2 className="section-title">Gravedad de Rezago</h2>
+          <div className="tutor-viewport-content">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats?.failedSubjectsDistribution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Cantidad']} />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {stats?.failedSubjectsDistribution?.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color} 
+                      className="interactive-chart-element" 
+                      onClick={() => handleChartClick('failVolume', entry)} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Tarjeta 6: Cumplimiento de Tareas (movido al final) */}
+        <div className="tutor-viewport-card glass-panel">
+          <h2 className="section-title">Cumplimiento de Tareas</h2>
+          <div className="tutor-viewport-content">
+            {hasTasks ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={taskDistribution} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip formatter={(value) => [`${value} Tareas`, 'Frecuencia']} />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                     {taskDistribution.map((entry, index) => (
+                       <Cell 
+                         key={`cell-${index}`} 
+                         fill={entry.color} 
+                         className="interactive-chart-element" 
+                         onClick={() => handleChartClick('tasks', entry)} 
+                       />
+                     ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p className="text-muted text-sm">Sin tareas</p></div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* --- Ovelays (Modales) de Métricas Principales --- */}
-
       {activeStatModal === 'risk' && createPortal(
         <div className="modal-overlay fade-in" onClick={() => setActiveStatModal(null)}>
           <div className="modal glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
@@ -291,6 +364,63 @@ const TutorDashboard = () => {
         </div>
       , document.body)}
 
+      {/* --- Modal Dinámico de Gráficas --- */}
+      {activeChartModal && createPortal(
+        <div className="modal-overlay fade-in" onClick={() => setActiveChartModal(false)}>
+          <div className="modal glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '650px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'hsl(var(--text))' }}>{chartModalData.title}</h3>
+              <button className="icon-btn" onClick={() => setActiveChartModal(false)}><X size={20} /></button>
+            </div>
+            
+            <p className="text-muted text-sm mb-4">Total de alumnos en esta categoría: <strong>{chartModalData.students.length}</strong></p>
+
+            <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+              {chartModalData.students.length === 0 ? (
+                <p className="text-muted text-center p-4">No hay alumnos en esta categoría.</p>
+              ) : (
+                <ul style={{ paddingLeft: '0', listStyle: 'none', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {chartModalData.students.map(s => (
+                    <li key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsla(0,0%,50%,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <User size={16} style={{ color: 'hsl(var(--text-muted))' }} />
+                        <strong>{s.name}</strong>
+                      </div>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        {chartModalData.type === 'tasks' && s.taskStats && (
+                          <span style={{ fontSize: '0.85rem', color: 'hsl(var(--text-muted))' }}>
+                            {chartModalData.dataKey === 'Vencidas' ? `Debe: ${s.taskStats.overdue}` : chartModalData.dataKey === 'Entregadas' ? `Entregó: ${s.taskStats.completed}` : `Pendientes: ${s.taskStats.pending}`}
+                          </span>
+                        )}
+
+                        {chartModalData.type === 'failVolume' && (
+                          <span style={{ fontSize: '0.85rem', color: s.failedSubjects > 0 ? 'hsl(var(--error))' : 'inherit' }}>
+                            Reprobadas: <strong>{s.failedSubjects}</strong>
+                          </span>
+                        )}
+
+                        {(chartModalData.type === 'grades' || chartModalData.type === 'risk') && (
+                          <span style={{ fontSize: '0.85rem' }}>Promedio global: <strong>{s.average > 0 ? s.average : 'N/A'}</strong></span>
+                        )}
+
+                        <button onClick={() => { setActiveChartModal(false); setSelectedStudent(s); }} className="btn-icon" style={{ padding: '0.25rem' }} title="Enviar Mensaje">
+                          <Send size={14} />
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            
+            <div className="modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => setActiveChartModal(false)}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      , document.body)}
+
       {/* --- Modal Enviar Mensaje --- */}
       {selectedStudent && createPortal(
         <div className="modal-overlay fade-in">
@@ -300,10 +430,15 @@ const TutorDashboard = () => {
             <form onSubmit={handleSendMessage}>
               <textarea 
                 className="input-field" 
-                rows="4" 
                 placeholder="Escribe tu mensaje oficial aquí..."
                 value={msgContent}
-                onChange={(e) => setMsgContent(e.target.value)}
+                onChange={(e) => {
+                  setMsgContent(e.target.value);
+                  // Ajuste dinámico de altura (auto-resize)
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${e.target.scrollHeight}px`;
+                }}
+                style={{ resize: 'none', minHeight: '100px', overflow: 'hidden' }}
               />
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setSelectedStudent(null)}>Cancelar</button>
@@ -313,6 +448,7 @@ const TutorDashboard = () => {
           </div>
         </div>
       , document.body)}
+
     </div>
   );
 };

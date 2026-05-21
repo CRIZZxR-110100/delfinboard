@@ -219,3 +219,121 @@
   gap: 1rem;
   margin-top: 1.5rem;
 }
+
+/* ==================== INTERACTIVIDAD RECHARTS ==================== */
+.interactive-chart-element {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.interactive-chart-element:hover {
+  opacity: 0.7;
+}
+
+/* ==================== TUTOR VIEWPORT LAYOUT ==================== */
+.tutor-viewport-container {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 5rem);
+  gap: 1.5rem;
+  /* Mayor separación */
+  margin-bottom: 0;
+  padding-bottom: 4rem;
+  /* Espacio extra en la parte inferior para que las gráficas no queden al ras */
+}
+
+.tutor-viewport-header {
+  flex-shrink: 0;
+  margin-bottom: 0.5rem;
+}
+
+.tutor-viewport-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  /* Tarjetas más anchas */
+  gap: 1.5rem;
+  flex-shrink: 0;
+  margin-bottom: 1.5rem;
+  /* Mayor margen entre los contadores y las gráficas */
+}
+
+.tutor-viewport-grid {
+  display: grid;
+  /* El grid usará 3 columnas en pantallas grandes, y 1 o 2 en más chicas */
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  /* Hacemos que la segunda fila sea un 40% más alta que la primera, estirando los elementos de abajo */
+  grid-template-rows: 1fr 1fr;
+  grid-auto-rows: 1.4fr;
+  /* Por si se apilan en 3 filas en monitores más pequeños */
+  gap: 1.5rem;
+  flex: 1;
+}
+
+/* Quitamos la clase de columna estricta, ahora los cards van directos al grid */
+.tutor-viewport-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  min-height: 240px;
+  /* Reducido para asegurar que 2 filas entren en el viewport sin scroll */
+  background: hsl(var(--bg-surface));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid hsl(var(--text-muted) / 0.15);
+}
+
+.tutor-viewport-card .section-title {
+  font-size: 1.15rem;
+  margin-bottom: 1rem;
+}
+
+.tutor-viewport-content {
+  flex: 1;
+  min-height: 150px;
+  /* Reducido proporcionalmente */
+  position: relative;
+  padding: 0.5rem 1rem 1rem 1rem;
+  /* Añade margen interno para encoger visualmente las gráficas */
+}
+
+.tutor-viewport-table-container {
+  flex: 1;
+  overflow-x: auto;
+  min-height: 150px;
+  /* Reducido drásticamente para no forzar la altura de toda la fila del grid */
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.tutor-viewport-table-container th,
+.tutor-viewport-table-container td {
+  padding: 0.75rem 1rem;
+  /* Regresar a un padding cómodo */
+}
+
+/* ==================== RESPONSIVIDAD MÓVIL ==================== */
+@media (max-width: 768px) {
+  .tutor-viewport-stats {
+    grid-template-columns: 1fr; /* Apilar tarjetas de métricas */
+  }
+
+  .tutor-viewport-grid {
+    grid-template-columns: 1fr; /* Una sola columna para evitar desbordamiento horizontal en celulares */
+    grid-template-rows: auto; /* Anular el 1fr 1fr para que cada gráfica crezca naturalmente */
+    grid-auto-rows: auto;
+  }
+
+  .tutor-viewport-card {
+    min-height: 380px; /* Tarjetas mucho más altas en celular para mejor legibilidad táctil */
+  }
+
+  .tutor-viewport-content {
+    min-height: 280px; /* Gráficas más altas */
+    padding: 1rem; /* Margen normal para móviles */
+  }
+
+  .tutor-viewport-table-container {
+    min-height: 300px; /* Mostrar más alumnos a la vez sin tanto scroll en celular */
+  }
+}
