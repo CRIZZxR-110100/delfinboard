@@ -134,6 +134,7 @@
   width: 100%;
   margin: 0 auto;
   padding: 0 1rem;
+  margin-bottom: 4rem; /* Empuja las tarjetas hacia arriba evitando solapamiento con el botón */
 }
 
 .hero-feature-card {
@@ -172,18 +173,28 @@
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  background: transparent;
-  border: none;
-  color: hsl(var(--text-muted));
+  background: hsla(var(--bg-surface), 0.85);
+  border: 1px solid hsla(var(--text-muted), 0.2);
+  color: hsl(var(--text-main));
   cursor: pointer;
   animation: bounce 2s infinite;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: color 0.2s;
+  padding: 0.65rem 1.5rem;
+  border-radius: 50px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .scroll-indicator:hover {
   color: hsl(var(--primary));
+  border-color: hsla(var(--primary), 0.4);
+  background: hsl(var(--bg-surface));
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
 }
 
 @keyframes bounce {
@@ -192,16 +203,19 @@
   60% { transform: translateX(-50%) translateY(-4px); }
 }
 
-/* ========== DEMO SECTION ========== */
 .demo-section {
-  padding: 4rem 2rem;
-  max-width: 1200px;
+  padding: 2rem 2rem;
+  max-width: 1500px;
   margin: 0 auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .demo-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
 }
 
 .demo-badge {
@@ -251,11 +265,23 @@
 }
 
 .demo-chart-card {
-  padding: 1.5rem;
   position: relative;
   cursor: pointer;
   transition: all 0.25s ease;
   overflow: hidden;
+}
+
+/* Permitir compresión elástica en la demo para ajustarse estrictamente al 100vh */
+.demo-section .tutor-viewport-card {
+  min-height: 0 !important;
+}
+
+.demo-section .tutor-viewport-content {
+  min-height: 0 !important;
+}
+
+.demo-section .tutor-viewport-table-container {
+  min-height: 0 !important;
 }
 
 .demo-chart-card:hover {
@@ -319,6 +345,7 @@
 .demo-footer {
   text-align: center;
   padding: 2rem 0 1rem;
+  margin-top: 3rem;
   color: hsl(var(--text-muted));
   font-size: 0.85rem;
 }
@@ -459,6 +486,7 @@
 
   .demo-section {
     padding: 2rem 1rem;
+    height: auto;
   }
 
   .demo-table-cta {

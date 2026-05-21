@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import './Login.css';
+import './Dashboard.css'; // Importar layout exacto del TutorDashboard
 
 // ===================== DATOS MOCKUP PARA LA DEMO =====================
 const MOCK_RISK_DATA = [
@@ -25,12 +26,18 @@ const MOCK_EVOLUTION = [
   { name: 'Parcial 3', promedio: 8.4 }
 ];
 
-const MOCK_SUBJECTS = [
-  { name: 'Cálculo III', averageGrade: 6.2 },
-  { name: 'Física II', averageGrade: 7.1 },
-  { name: 'Programación', averageGrade: 8.9 },
-  { name: 'Base de Datos', averageGrade: 8.3 },
-  { name: 'Redes', averageGrade: 7.5 }
+const MOCK_GRADE_DISTRIBUTION = [
+  { name: 'Excelente (90-100)', value: 8, color: 'hsl(142, 71%, 45%)' },
+  { name: 'Bueno (80-89)', value: 6, color: 'hsl(200, 100%, 50%)' },
+  { name: 'Regular (70-79)', value: 4, color: 'hsl(45, 100%, 50%)' },
+  { name: 'Deficiente (<70)', value: 2, color: 'hsl(0, 84%, 60%)' }
+];
+
+const MOCK_FAILED_SUBJECTS = [
+  { name: '0 Reprobadas', value: 12, color: 'hsl(142, 71%, 45%)' },
+  { name: '1 Reprobada', value: 5, color: 'hsl(45, 100%, 50%)' },
+  { name: '2 Reprobadas', value: 2, color: 'hsl(25, 95%, 53%)' },
+  { name: '3+ Reprobadas', value: 1, color: 'hsl(0, 84%, 60%)' }
 ];
 
 const MOCK_STUDENTS = [
@@ -183,179 +190,181 @@ const Login = () => {
           </div>
         </div>
 
-        {!showDemo && (
-          <button className="scroll-indicator" onClick={scrollToDemo} aria-label="Ver demo">
-            <ChevronDown size={28} />
-          </button>
-        )}
+        <button className="scroll-indicator" onClick={scrollToDemo} aria-label="Ver demo">
+          <span>Ver Demo</span>
+          <ChevronDown size={24} />
+        </button>
       </section>
 
-      {/* ========== DEMO SECTION ========== */}
-      {showDemo && (
-        <section id="demo-section" className="demo-section fade-in">
-          <div className="demo-header">
+      <section id="demo-section" className="demo-section fade-in">
+        <div className="dashboard" style={{ width: '100%', maxWidth: '1500px', margin: '0 auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="demo-header tutor-viewport-header" style={{ marginBottom: '0', flexShrink: 0 }}>
             <div className="demo-badge">DEMO INTERACTIVA</div>
             <h2>Panel del Tutor <span className="gradient-text">en Acción</span></h2>
-            <p className="text-muted">Explora las capacidades del dashboard. Haz clic en cualquier gráfico para desbloquear la experiencia completa.</p>
+            <p className="text-muted">Explora las capacidades del dashboard. Haz clic en cualquier gráfico para interactuar.</p>
           </div>
 
-          {/* Stat Cards */}
-          <div className="demo-stats-grid">
-            <div className="demo-stat-card glass-panel" onClick={handleDemoInteraction}>
-              <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(250, 84%, 54%, 0.1)', color: 'hsl(250, 84%, 54%)' }}>
-                <Users size={24} />
+          <div className="tutor-viewport-container" style={{ flex: 1, minHeight: 0, paddingBottom: 0, marginBottom: 0, display: 'flex', flexDirection: 'column' }}>
+            {/* Stat Cards - Estructura Original de Tutor */}
+            <div className="tutor-viewport-stats" style={{ flexShrink: 0, marginBottom: '1rem' }}>
+            <div className="stat-card glass-panel" onClick={handleDemoInteraction} style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+              <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(var(--primary), 0.1)', color: 'hsl(var(--primary))', width: 40, height: 40 }}>
+                <Users size={20} />
               </div>
               <div className="stat-info">
-                <h3>20</h3>
-                <p>Alumnos Tutorados</p>
+                <h3 style={{ fontSize: '1.25rem' }}>20</h3>
+                <p style={{ fontSize: '0.8rem' }}>Alumnos Tutorados</p>
               </div>
             </div>
-            <div className="demo-stat-card glass-panel" onClick={handleDemoInteraction}>
-              <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(0, 84%, 60%, 0.1)', color: 'hsl(0, 84%, 60%)' }}>
-                <AlertTriangle size={24} />
+
+            <div className="stat-card glass-panel" onClick={handleDemoInteraction} style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+              <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(var(--error), 0.1)', color: 'hsl(var(--error))', width: 40, height: 40 }}>
+                <AlertTriangle size={20} />
               </div>
               <div className="stat-info">
-                <h3>3</h3>
-                <p>Alumnos en Riesgo</p>
+                <h3 style={{ fontSize: '1.25rem' }}>3</h3>
+                <p style={{ fontSize: '0.8rem' }}>Alumnos en Riesgo</p>
               </div>
             </div>
-            <div className="demo-stat-card glass-panel" onClick={handleDemoInteraction}>
-              <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(142, 71%, 45%, 0.1)', color: 'hsl(142, 71%, 45%)' }}>
-                <CheckCircle size={24} />
+
+            <div className="stat-card glass-panel" onClick={handleDemoInteraction} style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+              <div className="stat-icon-wrapper" style={{ backgroundColor: 'hsla(var(--secondary), 0.1)', color: 'hsl(var(--secondary))', width: 40, height: 40 }}>
+                <CheckCircle size={20} />
               </div>
               <div className="stat-info">
-                <h3>69%</h3>
-                <p>Tasa de Cumplimiento</p>
+                <h3 style={{ fontSize: '1.25rem' }}>69%</h3>
+                <p style={{ fontSize: '0.8rem' }}>Tasa de Cumplimiento</p>
               </div>
             </div>
           </div>
 
-          {/* Charts Row 1 */}
-          <div className="demo-charts-grid">
-            <div className="demo-chart-card glass-panel" onClick={handleDemoInteraction}>
-              <h3 className="section-title">Alineación de Grupo: Salud Analizada</h3>
-              <div className="demo-chart-container">
-                <ResponsiveContainer>
-                  <PieChart>
-                    <Pie data={MOCK_RISK_DATA} innerRadius={70} outerRadius={100} paddingAngle={5} dataKey="value">
-                      {MOCK_RISK_DATA.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Tutorados']} />
-                    <Legend verticalAlign="bottom" height={36} />
-                  </PieChart>
-                </ResponsiveContainer>
+          <div className="tutor-viewport-grid">
+            {/* Tarjeta 1: Tabla */}
+            <div className="tutor-viewport-card glass-panel demo-chart-card" onClick={handleDemoInteraction} style={{ position: 'relative', overflow: 'hidden' }}>
+              <h2 className="section-title">Resumen de Tutorados</h2>
+              <div className="tutor-viewport-table-container">
+                <table className="data-table" style={{ width: '100%', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr>
+                      <th>Alumno</th>
+                      <th>Prom.</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {MOCK_STUDENTS.map(s => (
+                      <tr key={s.id} style={s.hasCriticalAlert ? { backgroundColor: 'hsla(0, 84%, 60%, 0.05)' } : {}}>
+                        <td style={{ fontWeight: 500 }}>{s.name}</td>
+                        <td>{s.average}</td>
+                        <td>
+                          <span className={`badge badge-risk-${s.academicStatus === 'Riesgo Alto' ? 'alto' : s.academicStatus === 'En Curso' ? 'medio' : 'bajo'}`} style={{ padding: '0.15rem 0.4rem', fontSize: '0.7rem' }}>
+                            {s.academicStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <div className="demo-chart-overlay">
-                <LogIn size={24} />
-                <span>Inicia sesión para interactuar</span>
-              </div>
+              <div className="demo-chart-overlay"><LogIn size={24} /><span>Inicia sesión para interactuar</span></div>
             </div>
 
-            <div className="demo-chart-card glass-panel" onClick={handleDemoInteraction}>
-              <h3 className="section-title">Evolución del Rendimiento Grupal</h3>
-              <div className="demo-chart-container">
-                <ResponsiveContainer>
-                  <LineChart data={MOCK_EVOLUTION}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.06)" />
-                    <XAxis dataKey="name" />
-                    <YAxis domain={[0, 10]} />
+            {/* Tarjeta 2: Distribución de Promedios */}
+            <div className="tutor-viewport-card glass-panel demo-chart-card" onClick={handleDemoInteraction} style={{ position: 'relative', overflow: 'hidden' }}>
+              <h2 className="section-title">Distribución Promedios</h2>
+              <div className="tutor-viewport-content">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={MOCK_GRADE_DISTRIBUTION} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                    <YAxis tick={{ fontSize: 10 }} />
                     <Tooltip />
-                    <Line type="monotone" dataKey="promedio" stroke="hsl(250, 84%, 54%)" strokeWidth={3} dot={{ r: 6 }} activeDot={{ r: 8 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="demo-chart-overlay">
-                <LogIn size={24} />
-                <span>Inicia sesión para interactuar</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Charts Row 2 */}
-          <div className="demo-charts-grid">
-            <div className="demo-chart-card glass-panel" onClick={handleDemoInteraction}>
-              <h3 className="section-title">Esfuerzo del Grupo: Cumplimiento de Tareas</h3>
-              <div className="demo-chart-container">
-                <ResponsiveContainer>
-                  <BarChart data={MOCK_TASK_DISTRIBUTION}>
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [`${value} Tareas`, 'Frecuencia']} />
                     <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                      {MOCK_TASK_DISTRIBUTION.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                      {MOCK_GRADE_DISTRIBUTION.map((entry, index) => <Cell key={index} fill={entry.color} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="demo-chart-overlay">
-                <LogIn size={24} />
-                <span>Inicia sesión para interactuar</span>
-              </div>
+              <div className="demo-chart-overlay"><LogIn size={24} /><span>Inicia sesión para interactuar</span></div>
             </div>
 
-            <div className="demo-chart-card glass-panel" onClick={handleDemoInteraction}>
-              <h3 className="section-title">Promedio General por Materia</h3>
-              <div className="demo-chart-container">
-                <ResponsiveContainer>
-                  <BarChart data={MOCK_SUBJECTS} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(0,0,0,0.06)" />
-                    <XAxis type="number" domain={[0, 10]} />
-                    <YAxis dataKey="name" type="category" width={100} fontSize={12} />
+            {/* Tarjeta 3: Alineación de Grupo */}
+            <div className="tutor-viewport-card glass-panel demo-chart-card" onClick={handleDemoInteraction} style={{ position: 'relative', overflow: 'hidden' }}>
+              <h2 className="section-title">Alineación de Grupo</h2>
+              <div className="tutor-viewport-content">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={MOCK_RISK_DATA} innerRadius="50%" outerRadius="80%" paddingAngle={5} dataKey="value">
+                      {MOCK_RISK_DATA.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                    </Pie>
                     <Tooltip />
-                    <Bar dataKey="averageGrade" fill="hsl(200, 100%, 50%)" radius={[0, 4, 4, 0]} />
+                    <Legend verticalAlign="bottom" height={24} iconSize={10} wrapperStyle={{ fontSize: '0.8rem' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="demo-chart-overlay"><LogIn size={24} /><span>Inicia sesión para interactuar</span></div>
+            </div>
+
+            {/* Tarjeta 4: Evolución */}
+            <div className="tutor-viewport-card glass-panel demo-chart-card" onClick={handleDemoInteraction} style={{ position: 'relative', overflow: 'hidden' }}>
+              <h2 className="section-title">Evolución de Rendimiento</h2>
+              <div className="tutor-viewport-content">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={MOCK_EVOLUTION} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsla(var(--text), 0.1)" />
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                    <YAxis domain={[0, 10]} tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="promedio" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="demo-chart-overlay"><LogIn size={24} /><span>Inicia sesión para interactuar</span></div>
+            </div>
+
+            {/* Tarjeta 5: Gravedad de Rezago */}
+            <div className="tutor-viewport-card glass-panel demo-chart-card" onClick={handleDemoInteraction} style={{ position: 'relative', overflow: 'hidden' }}>
+              <h2 className="section-title">Gravedad de Rezago</h2>
+              <div className="tutor-viewport-content">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={MOCK_FAILED_SUBJECTS} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                      {MOCK_FAILED_SUBJECTS.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="demo-chart-overlay">
-                <LogIn size={24} />
-                <span>Inicia sesión para interactuar</span>
+              <div className="demo-chart-overlay"><LogIn size={24} /><span>Inicia sesión para interactuar</span></div>
+            </div>
+
+            {/* Tarjeta 6: Cumplimiento de Tareas */}
+            <div className="tutor-viewport-card glass-panel demo-chart-card" onClick={handleDemoInteraction} style={{ position: 'relative', overflow: 'hidden' }}>
+              <h2 className="section-title">Cumplimiento de Tareas</h2>
+              <div className="tutor-viewport-content">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={MOCK_TASK_DISTRIBUTION} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                      {MOCK_TASK_DISTRIBUTION.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
+              <div className="demo-chart-overlay"><LogIn size={24} /><span>Inicia sesión para interactuar</span></div>
             </div>
           </div>
-
-          {/* Students Table */}
-          <div className="demo-table-card glass-panel" onClick={handleDemoInteraction}>
-            <h3 className="section-title">Resumen de Tutorados</h3>
-            <div className="table-container" style={{ overflowX: 'auto' }}>
-              <table className="data-table" style={{ minWidth: '650px' }}>
-                <thead>
-                  <tr>
-                    <th>Alumno</th>
-                    <th>Promedio</th>
-                    <th>Materias Activas</th>
-                    <th>Nivel Riesgo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {MOCK_STUDENTS.map(s => (
-                    <tr key={s.id} style={s.hasCriticalAlert ? { backgroundColor: 'hsla(0, 84%, 60%, 0.04)' } : {}}>
-                      <td style={{ fontWeight: 500 }}>{s.name}</td>
-                      <td>{s.average}</td>
-                      <td>{s.activeSubjects} mat.</td>
-                      <td>
-                        <span className={`badge badge-risk-${s.academicStatus === 'Riesgo Alto' ? 'alto' : s.academicStatus === 'En Curso' ? 'medio' : 'bajo'}`}>
-                          {s.academicStatus}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="demo-table-cta">
-              <p>¿Quieres gestionar tu propio grupo de tutorados?</p>
-              <button className="btn-primary" onClick={(e) => { e.stopPropagation(); setIsLogin(false); setShowAuthModal(true); }}>
-                <UserPlus size={18} /> Crear mi Cuenta
-              </button>
-            </div>
           </div>
+        </div>
 
-          {/* Footer */}
-          <footer className="demo-footer">
-            <p>&copy; {new Date().getFullYear()} DelfinBoard. Todos los derechos reservados.</p>
-          </footer>
-        </section>
-      )}
+        {/* Footer */}
+        <footer className="demo-footer">
+          <p>&copy; {new Date().getFullYear()} DelfinBoard. Todos los derechos reservados.</p>
+        </footer>
+      </section>
 
       {/* ========== AUTH MODAL ========== */}
       {showAuthModal && (
