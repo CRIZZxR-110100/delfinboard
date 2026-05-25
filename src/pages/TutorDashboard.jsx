@@ -114,12 +114,26 @@ const TutorDashboard = () => {
 
   const taskDistribution = stats?.taskDistribution || [];
   const hasTasks = taskDistribution.some(t => t.value > 0);
+  const hasGrades = stats?.gradeDistribution?.some(g => g.value > 0);
+  const hasFailed = stats?.failedSubjectsDistribution?.some(f => f.value > 0);
+  const hasPerformance = stats?.performanceEvolution?.length > 0;
+
+  const EmptyState = ({ text }) => (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', textAlign: 'center' }}>
+      <BookOpen size={32} style={{ color: 'hsla(var(--text-muted), 0.3)', marginBottom: '0.75rem' }} />
+      <p className="text-muted" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{text}</p>
+    </div>
+  );
 
   return (
     <div className="tutor-viewport-container fade-in">
       <header className="tutor-viewport-header">
-        <h1 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>DelfinBoard Tutor</h1>
-        <p className="text-muted" style={{ fontSize: '0.9rem' }}>Análisis global y seguimiento académico de tutorados del semestre.</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h1 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>DelfinBoard Tutor</h1>
+            <p className="text-muted" style={{ fontSize: '0.9rem' }}>Análisis global y seguimiento académico de tutorados del semestre.</p>
+          </div>
+        </div>
       </header>
 
       <div className="tutor-viewport-stats">
@@ -187,25 +201,36 @@ const TutorDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {students.map(s => (
-                  <tr key={s.id} style={s.hasCriticalAlert ? { backgroundColor: 'hsla(0, 84%, 60%, 0.05)' } : {}}>
-                    <td style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.name}>
-                      {s.name}
-                      {s.hasCriticalAlert && <AlertOctagon size={12} style={{ color: 'hsl(var(--error))', marginLeft: '0.25rem', display: 'inline' }} />}
-                    </td>
-                    <td>{s.average > 0 ? s.average : '-'}</td>
-                    <td>
-                      <span className={`badge badge-risk-${s.academicStatus === 'Riesgo Alto' ? 'alto' : s.academicStatus === 'En Curso' ? 'medio' : 'bajo'}`} style={{ padding: '0.15rem 0.4rem', fontSize: '0.7rem' }}>
-                        {s.academicStatus}
-                      </span>
-                    </td>
-                    <td>
-                      <button onClick={() => setSelectedStudent(s)} className="btn-icon" style={{ padding: '0.25rem' }}>
-                        <Send size={14} />
-                      </button>
+                {students.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '3rem 1rem', color: 'hsl(var(--text-muted))' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                        <Users size={28} style={{ opacity: 0.5 }} />
+                        <p style={{ margin: 0, fontSize: '0.9rem' }}>Aún no tienes alumnos inscritos.</p>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  students.map(s => (
+                    <tr key={s.id} style={s.hasCriticalAlert ? { backgroundColor: 'hsla(0, 84%, 60%, 0.05)' } : {}}>
+                      <td style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.name}>
+                        {s.name}
+                        {s.hasCriticalAlert && <AlertOctagon size={12} style={{ color: 'hsl(var(--error))', marginLeft: '0.25rem', display: 'inline' }} />}
+                      </td>
+                      <td>{s.average > 0 ? s.average : '-'}</td>
+                      <td>
+                        <span className={`badge badge-risk-${s.academicStatus === 'Riesgo Alto' ? 'alto' : s.academicStatus === 'En Curso' ? 'medio' : 'bajo'}`} style={{ padding: '0.15rem 0.4rem', fontSize: '0.7rem' }}>
+                          {s.academicStatus}
+                        </span>
+                      </td>
+                      <td>
+                        <button onClick={() => setSelectedStudent(s)} className="btn-icon" style={{ padding: '0.25rem' }}>
+                          <Send size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -215,23 +240,27 @@ const TutorDashboard = () => {
         <div className="tutor-viewport-card glass-panel">
           <h2 className="section-title">Distribución Promedios</h2>
           <div className="tutor-viewport-content">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats?.gradeDistribution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Frecuencia']} />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                  {stats?.gradeDistribution?.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color} 
-                      className="interactive-chart-element" 
-                      onClick={() => handleChartClick('grades', entry)} 
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {hasGrades ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats?.gradeDistribution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Frecuencia']} />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    {stats?.gradeDistribution?.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color} 
+                        className="interactive-chart-element" 
+                        onClick={() => handleChartClick('grades', entry)} 
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyState text="Aquí verás una campana de distribución mostrando cuántos alumnos tienen promedios excelentes, buenos, regulares o deficientes." />
+            )}
           </div>
         </div>
 
@@ -257,7 +286,7 @@ const TutorDashboard = () => {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p className="text-muted">Procesando...</p></div>
+              <EmptyState text="Muestra la proporción de alumnos que están estables frente a los que se encuentran en riesgo alto de reprobación." />
             )}
           </div>
         </div>
@@ -266,15 +295,19 @@ const TutorDashboard = () => {
         <div className="tutor-viewport-card glass-panel">
           <h2 className="section-title">Evolución de Rendimiento</h2>
           <div className="tutor-viewport-content">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={stats?.performanceEvolution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsla(var(--text), 0.1)" />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis domain={[0, 10]} tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="promedio" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            {hasPerformance ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={stats?.performanceEvolution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsla(var(--text), 0.1)" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                  <YAxis domain={[0, 10]} tick={{ fontSize: 10 }} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="promedio" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyState text="Aquí se dibujará una línea de tendencia mostrando si el grupo mejora o empeora su promedio conforme avanzan los parciales." />
+            )}
           </div>
         </div>
 
@@ -282,23 +315,27 @@ const TutorDashboard = () => {
         <div className="tutor-viewport-card glass-panel">
           <h2 className="section-title">Gravedad de Rezago</h2>
           <div className="tutor-viewport-content">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats?.failedSubjectsDistribution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Cantidad']} />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                  {stats?.failedSubjectsDistribution?.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color} 
-                      className="interactive-chart-element" 
-                      onClick={() => handleChartClick('failVolume', entry)} 
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {hasFailed ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats?.failedSubjectsDistribution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Cantidad']} />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    {stats?.failedSubjectsDistribution?.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color} 
+                        className="interactive-chart-element" 
+                        onClick={() => handleChartClick('failVolume', entry)} 
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyState text="Indica cuántos alumnos tienen 0, 1, 2 o más materias reprobadas actualmente." />
+            )}
           </div>
         </div>
 
@@ -325,7 +362,7 @@ const TutorDashboard = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p className="text-muted text-sm">Sin tareas</p></div>
+              <EmptyState text="Resumen del volumen de tareas entregadas, pendientes y vencidas de todo tu grupo." />
             )}
           </div>
         </div>

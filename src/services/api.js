@@ -56,6 +56,16 @@ export const userAPI = {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Error al obtener mensajes');
     return data;
+  },
+  joinTutor: async (invitationCode) => {
+    const response = await fetch(`${API_URL}/user/join-tutor`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ invitationCode }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Error al unirse a tutor');
+    return data;
   }
 };
 
@@ -99,6 +109,30 @@ export const tutorAPI = {
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Error al enviar mensaje');
+    return data;
+  },
+  getPendingStudents: async () => {
+    const response = await fetch(`${API_URL}/tutor/pending-students`, { headers: getHeaders() });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Error al obtener alumnos pendientes');
+    return data;
+  },
+  approveStudent: async (id) => {
+    const response = await fetch(`${API_URL}/tutor/approve-student/${id}`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Error al aprobar alumno');
+    return data;
+  },
+  rejectStudent: async (id) => {
+    const response = await fetch(`${API_URL}/tutor/reject-student/${id}`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Error al rechazar alumno');
     return data;
   }
 };

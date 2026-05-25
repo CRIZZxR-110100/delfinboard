@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, User, Users, Home, Menu, X, BookOpen, CheckSquare, GraduationCap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { tutorAPI } from '../services/api';
 import './Layout.css';
 
 const Layout = () => {
@@ -13,6 +15,43 @@ const Layout = () => {
 
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [pendingStudents, setPendingStudents] = useState([]);
+  const [showPendingModal, setShowPendingModal] = useState(false);
+
+  const fetchPending = async () => {
+    if (user?.role === 'tutor') {
+      try {
+        const data = await tutorAPI.getPendingStudents();
+        setPendingStudents(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchPending();
+  }, [user]);
+
+  const handleApprove = async (id) => {
+    try {
+      await tutorAPI.approveStudent(id);
+      addToast('Alumno aprobado correctamente', 'success');
+      fetchPending();
+    } catch (err) {
+      addToast(err.message, 'error');
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      await tutorAPI.rejectStudent(id);
+      addToast('Solicitud rechazada', 'success');
+      fetchPending();
+    } catch (err) {
+      addToast(err.message, 'error');
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -33,13 +72,6 @@ const Layout = () => {
     else if (path === '/perfil') title = 'DelfinBoard - Mi Perfil';
     else if (path === '/materias') title = 'DelfinBoard - Mis Materias';
     else if (path === '/tareas') title = 'DelfinBoard - Mis Tareas';
-    else if (path.includes('/materia/nueva')) title = 'DelfinBoard - Nueva Materia';
-    else if (path.includes('/materia/ver')) title = 'DelfinBoard - Detalles de Materia';
-    else if (path.includes('/materia/editar')) title = 'DelfinBoard - Editar Materia';
-    else if (path.includes('/tarea/nueva')) title = 'DelfinBoard - Nueva Tarea';
-    else if (path.includes('/tarea/editar')) title = 'DelfinBoard - Editar Tarea';
-    else if (path.includes('/calificacion/nueva')) title = 'DelfinBoard - Nueva Calificación';
-    else if (path.includes('/calificacion/editar')) title = 'DelfinBoard - Editar Calificación';
     else if (path === '/tutor/alumnos') title = 'DelfinBoard - Lista de Tutorados';
     else if (path === '/tutor/materias') title = 'DelfinBoard - Control de Materias';
 
@@ -61,6 +93,23 @@ const Layout = () => {
         </div>
 
         <div className="navbar-right">
+          {user?.role === 'tutor' && user?.invitationCode && (
+            <div className="navbar-tutor-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div className="nav-tutor-code" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.8rem', background: 'hsla(var(--primary), 0.1)', borderRadius: '8px', border: '1px solid hsla(var(--primary), 0.2)' }} title="Comparte este código con tus alumnos">
+                <span className="hide-on-mobile" style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'hsl(var(--text-muted))' }}>Código:</span>
+                <strong style={{ color: 'hsl(var(--primary))', letterSpacing: '1px' }}>{user.invitationCode}</strong>
+              </div>
+              <button className="btn-secondary btn-sm nav-solicitudes-btn" onClick={() => setShowPendingModal(true)} style={{ position: 'relative', marginRight: '1rem' }}>
+                <span className="hide-on-mobile">Solicitudes</span>
+                <span className="show-on-mobile" style={{ display: 'none' }}><Users size={16}/></span>
+                {pendingStudents.length > 0 && (
+                  <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: 'hsl(0, 84%, 60%)', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {pendingStudents.length}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
           <div className="profile-menu-container">
             <button className="profile-btn" onClick={() => setDropdownOpen(!isDropdownOpen)}>
               <div className="avatar">{user?.name?.charAt(0).toUpperCase() || 'U'}</div>
@@ -127,6 +176,45 @@ const Layout = () => {
       <main className="main-content" onClick={() => isDropdownOpen && setDropdownOpen(false)}>
         <Outlet />
       </main>
+
+      {/* --- Modal Solicitudes Pendientes (Global para el Tutor) --- */}
+      {showPendingModal && createPortal(
+        <div className="modal-overlay fade-in" onClick={() => setShowPendingModal(false)}>
+          <div className="modal glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', zIndex: 1000 }}>
+            <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <User size={24} style={{ color: 'hsl(var(--primary))' }} />
+              Solicitudes de Alumnos
+            </h3>
+            
+            {pendingStudents.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                <p className="text-muted" style={{ fontSize: '0.85rem' }}>
+                  Actualmente no tienes solicitudes de alumnos esperando para unirse a tu tutoría. Comparte tu código de invitación (<strong>{user?.invitationCode}</strong>) con tus estudiantes para que puedan enlazarse a tu cuenta.
+                </p>
+              </div>
+            ) : (
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {pendingStudents.map(student => (
+                  <li key={student.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'hsla(var(--text), 0.03)', borderRadius: '8px' }}>
+                    <div>
+                      <p style={{ fontWeight: 'bold', margin: 0 }}>{student.name}</p>
+                      <p className="text-muted" style={{ fontSize: '0.8rem', margin: 0 }}>{student.email}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button className="btn-secondary btn-sm" onClick={() => handleReject(student.id)} style={{ color: 'hsl(var(--error))', borderColor: 'hsla(var(--error), 0.3)' }}>Rechazar</button>
+                      <button className="btn-primary btn-sm" onClick={() => handleApprove(student.id)}>Aprobar</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            
+            <div className="modal-actions" style={{ marginTop: '1.5rem' }}>
+              <button type="button" className="btn-secondary" onClick={() => setShowPendingModal(false)}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      , document.body)}
     </div>
   );
 };

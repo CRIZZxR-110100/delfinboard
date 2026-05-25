@@ -177,7 +177,6 @@
   border: 1px solid hsla(var(--text-muted), 0.2);
   color: hsl(var(--text-main));
   cursor: pointer;
-  animation: bounce 2s infinite;
   padding: 0.65rem 1.5rem;
   border-radius: 50px;
   transition: all 0.3s;
@@ -271,17 +270,13 @@
   overflow: hidden;
 }
 
-/* Permitir compresión elástica en la demo para ajustarse estrictamente al 100vh */
-.demo-section .tutor-viewport-card {
-  min-height: 0 !important;
-}
-
-.demo-section .tutor-viewport-content {
-  min-height: 0 !important;
-}
-
-.demo-section .tutor-viewport-table-container {
-  min-height: 0 !important;
+/* Permitir compresión elástica en la demo para ajustarse estrictamente al 100vh SOLO EN ESCRITORIO */
+@media (min-width: 769px) {
+  .demo-section .tutor-viewport-card,
+  .demo-section .tutor-viewport-content,
+  .demo-section .tutor-viewport-table-container {
+    min-height: 0 !important;
+  }
 }
 
 .demo-chart-card:hover {

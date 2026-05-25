@@ -3,13 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { academicAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { CheckSquare, PlusSquare, Edit2, Loader2, Calendar } from 'lucide-react';
+import AddTask from './AddTask';
+import EditTask from './EditTask';
 
 const TasksList = () => {
   const [tasks, setTasks] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
-  const navigate = useNavigate();
+
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [showEditTask, setShowEditTask] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -50,7 +55,7 @@ const TasksList = () => {
           </h1>
           <p className="text-muted">Administra todo tu flujo de trabajo, crea o edita deberes específicos.</p>
         </div>
-        <button className="btn-primary" onClick={() => navigate('/tarea/nueva')}>
+        <button className="btn-primary" onClick={() => setShowAddTask(true)}>
           <PlusSquare size={18} /> Nueva Tarea
         </button>
       </div>
@@ -95,7 +100,7 @@ const TasksList = () => {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button onClick={() => navigate(`/tarea/editar/${task.id}`)} className="btn-secondary" style={{ padding: '0.5rem', borderRadius: '50%' }} title="Editar Tarea">
+                      <button onClick={() => { setSelectedTaskId(task.id); setShowEditTask(true); }} className="btn-secondary" style={{ padding: '0.5rem', borderRadius: '50%' }} title="Editar Tarea">
                         <Edit2 size={16} />
                       </button>
                     </div>
@@ -106,6 +111,18 @@ const TasksList = () => {
           )}
         </div>
       )}
+
+      <AddTask 
+        isOpen={showAddTask} 
+        onClose={() => setShowAddTask(false)} 
+        onSuccess={fetchData} 
+      />
+      <EditTask 
+        isOpen={showEditTask} 
+        onClose={() => setShowEditTask(false)} 
+        onSuccess={fetchData} 
+        taskId={selectedTaskId} 
+      />
     </div>
   );
 };

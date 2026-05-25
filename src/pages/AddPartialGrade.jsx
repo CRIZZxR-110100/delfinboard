@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { useToast } from '../context/ToastContext';
 import { academicAPI } from '../services/api';
-import { Calculator, ArrowLeft, Loader2 } from 'lucide-react';
+import { Calculator, Loader2, X } from 'lucide-react';
 
-const AddPartialGrade = () => {
-  const [searchParams] = useSearchParams();
-  const initialSubject = searchParams.get('subjectId') || '';
-  const [formData, setFormData] = useState({ subjectId: initialSubject, partialName: '', grade: '' });
+const AddPartialGrade = ({ isOpen, onClose, onSuccess, initialSubjectId = '' }) => {
+  const [formData, setFormData] = useState({ subjectId: initialSubjectId, partialName: '', grade: '' });
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    academicAPI.getSubjects()
-      .then(res => setSubjects(res))
-      .catch(err => addToast(err.message, 'error'));
-  }, []);
+    if (isOpen) {
+      academicAPI.getSubjects()
+        .then(res => setSubjects(res))
+        .catch(err => addToast(err.message, 'error'));
+
+      setFormData(prev => ({ ...prev, subjectId: initialSubjectId }));
+    }
+  }, [isOpen, initialSubjectId, addToast]);
+
+  if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +32,9 @@ const AddPartialGrade = () => {
     try {
       await academicAPI.addPartialGrade(formData);
       addToast('Calificación parcial agregada', 'success');
-      navigate(-1);
+      setFormData({ subjectId: initialSubjectId, partialName: '', grade: '' });
+      if (onSuccess) onSuccess();
+      onClose();
     } catch (err) {
       addToast(err.message, 'error');
     } finally {
@@ -37,13 +42,15 @@ const AddPartialGrade = () => {
     }
   };
 
-  return (
-    <div className="dashboard fade-in" style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '2rem' }}>
-      <button className="btn-secondary" onClick={() => navigate(-1)} style={{ marginBottom: '1rem', width: 'fit-content' }}>
-        <ArrowLeft size={16} /> Volver
-      </button>
-      <div className="glass-panel p-4">
-        <h2 className="section-title"><Calculator size={20} /> Registrar Calificación Parcial</h2>
+  return createPortal(
+    <div className="modal-overlay fade-in" onClick={onClose} style={{ zIndex: 9999 }}>
+      <div className="modal glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '100%' }}>
+        <button className="icon-btn" onClick={onClose} style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+          <X size={20} />
+        </button>
+        <h2 className="section-title" style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Calculator size={20} /> Registrar Calificación Parcial
+        </h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div className="input-group">
             <label className="input-label">Materia</label>
@@ -67,12 +74,16 @@ const AddPartialGrade = () => {
             <label className="input-label">Calificación (Puntos)</label>
             <input type="number" step="0.1" className="input-field" value={formData.grade} onChange={e => setFormData({...formData, grade: e.target.value})} placeholder="Ej. 25.5" />
           </div>
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? <><Loader2 className="spinner" /> Procesando...</> : 'Guardar Parcial'}
-          </button>
+          <div className="modal-actions" style={{ marginTop: '1rem' }}>
+            <button type="button" className="btn-secondary" onClick={onClose} disabled={loading}>Cancelar</button>
+            <button type="submit" className="btn-primary" disabled={loading}>
+              {loading ? <><Loader2 className="spinner" /> Procesando...</> : 'Guardar Parcial'}
+            </button>
+          </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Loader2, Save } from 'lucide-react';
+import { User, Mail, Loader2, Save, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { requestNotificationPermissionAndSubscribe } from '../utils/notifications';
 import './Profile.css';
 
 const Profile = () => {
@@ -39,6 +40,15 @@ const Profile = () => {
       addToast(err.message || 'Error al actualizar perfil', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubscribe = async () => {
+    const success = await requestNotificationPermissionAndSubscribe();
+    if (success) {
+      addToast('Notificaciones activadas exitosamente', 'success');
+    } else {
+      addToast('No se pudieron activar las notificaciones', 'error');
     }
   };
 
@@ -121,6 +131,18 @@ const Profile = () => {
             )}
           </div>
         </form>
+
+        <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'hsla(0,0%,50%,0.05)', borderRadius: 'var(--radius-lg)' }}>
+          <h3 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Bell size={20} /> Notificaciones
+          </h3>
+          <p className="text-muted" style={{ marginBottom: '1rem', fontSize: '0.95rem' }}>
+            Activa las notificaciones para recibir alertas cuando tu tutor te asigne nuevas tareas o calificaciones.
+          </p>
+          <button onClick={handleSubscribe} className="btn-secondary" style={{ width: '100%' }}>
+            Habilitar Notificaciones Push
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -226,3 +226,36 @@
   width: 100%;
   margin: 0 auto;
 }
+
+/* RESPONSIVE NAVBAR */
+@media (max-width: 768px) {
+  .navbar-tutor-actions {
+    gap: 0.5rem !important;
+  }
+  
+  .hide-on-mobile {
+    display: none !important;
+  }
+  
+  .show-on-mobile {
+    display: inline-flex !important;
+    align-items: center;
+  }
+  
+  .nav-tutor-code {
+    padding: 0.4rem 0.6rem !important;
+    margin-right: 0.5rem !important;
+  }
+  
+  .nav-solicitudes-btn {
+    padding: 0.4rem 0.6rem !important;
+  }
+
+  .profile-name {
+    display: none !important;
+  }
+  
+  .brand-text {
+    font-size: 1.1rem;
+  }
+}

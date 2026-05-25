@@ -3,12 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { academicAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { BookOpen, PlusCircle, Edit2, Loader2, ArrowRight } from 'lucide-react';
+import AddSubject from './AddSubject';
+import SubjectView from './SubjectView';
 
 const SubjectsList = () => {
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
-  const navigate = useNavigate();
+
+  const [showAddSubject, setShowAddSubject] = useState(false);
+  const [showSubjectView, setShowSubjectView] = useState(false);
+  const [selectedSubjectId, setSelectedSubjectId] = useState(null);
 
   useEffect(() => {
     fetchSubjects();
@@ -34,7 +39,7 @@ const SubjectsList = () => {
           </h1>
           <p className="text-muted">Administra tu carga académica, registra nuevas materias o modifica las existentes.</p>
         </div>
-        <button className="btn-primary" onClick={() => navigate('/materia/nueva')}>
+        <button className="btn-primary" onClick={() => setShowAddSubject(true)}>
           <PlusCircle size={18} /> Nueva Materia
         </button>
       </div>
@@ -68,7 +73,7 @@ const SubjectsList = () => {
                   return (
                     <tr 
                       key={sub.id} 
-                      onClick={() => navigate(`/materia/ver/${sub.id}`)}
+                      onClick={() => { setSelectedSubjectId(sub.id); setShowSubjectView(true); }}
                       style={{ transition: 'all 0.2s', cursor: 'pointer' }}
                     >
                       <td style={{ fontWeight: '600', color: 'hsl(var(--text-main))' }}>
@@ -93,6 +98,17 @@ const SubjectsList = () => {
           </table>
         </div>
       )}
+
+      <AddSubject 
+        isOpen={showAddSubject} 
+        onClose={() => setShowAddSubject(false)} 
+        onSuccess={fetchSubjects} 
+      />
+      <SubjectView 
+        isOpen={showSubjectView} 
+        onClose={() => setShowSubjectView(false)} 
+        subjectId={selectedSubjectId} 
+      />
     </div>
   );
 };

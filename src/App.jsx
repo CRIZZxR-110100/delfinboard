@@ -9,19 +9,10 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Layout from './pages/Layout';
 
-import AddSubject from './pages/AddSubject';
-import AddTask from './pages/AddTask';
-import AddPartialGrade from './pages/AddPartialGrade';
-
 import SubjectsList from './pages/SubjectsList';
 import TasksList from './pages/TasksList';
-import SubjectView from './pages/SubjectView';
 import TutorStudentsList from './pages/TutorStudentsList';
 import TutorSubjectsList from './pages/TutorSubjectsList';
-
-import EditSubject from './pages/EditSubject';
-import EditTask from './pages/EditTask';
-import EditPartialGrade from './pages/EditPartialGrade';
 
 // Componente para proteger la ruta de login si ya está autenticado
 const PublicRoute = ({ children }) => {
@@ -44,15 +35,6 @@ const AppContent = () => {
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/perfil" element={<Profile />} />
-            
-            <Route path="/materia/nueva" element={<AddSubject />} />
-            <Route path="/calificacion/nueva" element={<AddPartialGrade />} />
-            <Route path="/tarea/nueva" element={<AddTask />} />
-
-            <Route path="/materia/editar/:id" element={<EditSubject />} />
-            <Route path="/materia/ver/:id" element={<SubjectView />} />
-            <Route path="/calificacion/editar/:id" element={<EditPartialGrade />} />
-            <Route path="/tarea/editar/:id" element={<EditTask />} />
             
             <Route path="/materias" element={<SubjectsList />} />
             <Route path="/tareas" element={<TasksList />} />

@@ -6,6 +6,11 @@ import { academicAPI, userAPI } from '../services/api';
 import { Book, Plus, GraduationCap, MessageCircle, CheckSquare, PlusCircle, Calculator, Calendar, Edit2 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import './Dashboard.css';
+import AddSubject from './AddSubject';
+import AddTask from './AddTask';
+import AddPartialGrade from './AddPartialGrade';
+import SubjectView from './SubjectView';
+import EditTask from './EditTask';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -16,6 +21,15 @@ const StudentDashboard = () => {
   const [messages, setMessages] = useState([]);
   const [stats, setStats] = useState({ approvedCount: 0, failedCount: 0, cursandoCount: 0 });
   const [loading, setLoading] = useState(true);
+
+  const [showAddSubject, setShowAddSubject] = useState(false);
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [showAddGrade, setShowAddGrade] = useState(false);
+  
+  const [showSubjectView, setShowSubjectView] = useState(false);
+  const [selectedSubjectId, setSelectedSubjectId] = useState(null);
+  const [showEditTask, setShowEditTask] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -81,12 +95,28 @@ const StudentDashboard = () => {
         <p className="text-muted">Gestiona tu carga académica de este semestre ({stats.cursandoCount} materias registradas).</p>
       </header>
 
+      {/* Acciones Rápidas (Gestión Académica) Moviendo arriba de las gráficas */}
+      <div className="glass-panel p-4 mt-4" style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
+        <h2 className="section-title w-full text-center" style={{ width: '100%' }}><Plus size={20} /> Gestión Académica Rápida</h2>
+        <button onClick={() => setShowAddSubject(true)} className="btn-primary" style={{ flex: '1 1 200px' }}>
+          <PlusCircle size={18} /> Registrar Materia
+        </button>
+        <button onClick={() => setShowAddTask(true)} className="btn-secondary" style={{ flex: '1 1 200px' }}>
+          <CheckSquare size={18} /> Añadir Tarea
+        </button>
+        <button onClick={() => setShowAddGrade(true)} className="btn-secondary" style={{ flex: '1 1 200px' }}>
+          <Calculator size={18} /> Ingresar Calificación
+        </button>
+      </div>
+
       <div className="student-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
         <div className="glass-panel p-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <h2 className="section-title w-full"><GraduationCap size={20} /> Desempeño del Semestre</h2>
 
           {stats.cursandoCount === 0 ? (
-            <p className="text-muted text-center" style={{ marginTop: '4rem' }}>No hay materias registradas</p>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
+              <p className="text-muted text-center" style={{ margin: 0 }}>No hay materias registradas</p>
+            </div>
           ) : (
             <>
               <div style={{ position: 'relative', width: '100%', height: 160, display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
@@ -129,11 +159,15 @@ const StudentDashboard = () => {
           )}
         </div>
 
-        <div className="glass-panel p-4">
+        <div className="glass-panel p-4" style={{ display: 'flex', flexDirection: 'column' }}>
           <h2 className="section-title"><CheckSquare size={20} /> Tareas Pendientes</h2>
           {(() => {
             if (pendingTasks.length === 0) {
-              return <p className="text-muted text-center" style={{ marginTop: '2rem' }}>¡Al día! No tienes tareas pendientes.</p>;
+              return (
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
+                  <p className="text-muted text-center" style={{ margin: 0 }}>¡Al día! No tienes tareas pendientes.</p>
+                </div>
+              );
             }
 
             const now = new Date();
@@ -148,10 +182,20 @@ const StudentDashboard = () => {
 
             const week1Tasks = processedTasks.filter(t => t.diffDays >= 0 && t.diffDays <= 7);
             const week2Tasks = processedTasks.filter(t => t.diffDays > 7 && t.diffDays <= 14);
+            const futureTasks = processedTasks.filter(t => t.diffDays > 14);
 
             // Hide everything else? The user says "muestre solo las tareas de 2 semanas"
             if (week1Tasks.length === 0 && week2Tasks.length === 0) {
-              return <p className="text-muted text-center" style={{ marginTop: '2rem' }}>No hay tareas próximas (en las siguientes 2 semanas).</p>;
+              return (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '200px', gap: '1rem' }}>
+                  <p className="text-muted text-center" style={{ margin: 0 }}>No hay tareas próximas (en las siguientes 2 semanas).</p>
+                  {futureTasks.length > 0 && (
+                    <button onClick={() => navigate('/tareas')} className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+                      Ver {futureTasks.length} {futureTasks.length === 1 ? 'tarea posterior' : 'tareas posteriores'}
+                    </button>
+                  )}
+                </div>
+              );
             }
 
             // Group week 1
@@ -193,7 +237,7 @@ const StudentDashboard = () => {
                               </small>
                             </div>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button onClick={(e) => { e.stopPropagation(); navigate(`/tarea/editar/${task.id}`); }} className="btn-secondary" style={{ padding: '0.4rem', borderRadius: '50%' }} title="Editar">
+                              <button onClick={(e) => { e.stopPropagation(); setSelectedTaskId(task.id); setShowEditTask(true); }} className="btn-secondary" style={{ padding: '0.4rem', borderRadius: '50%' }} title="Editar">
                                 <Edit2 size={14} />
                               </button>
                               <button onClick={() => completeTask(task.id)} className="btn-primary" style={{ padding: '0.4rem', borderRadius: '50%' }} title="Marcar completada">
@@ -223,7 +267,7 @@ const StudentDashboard = () => {
                               </small>
                             </div>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button onClick={(e) => { e.stopPropagation(); navigate(`/tarea/editar/${task.id}`); }} className="btn-secondary" style={{ padding: '0.4rem', borderRadius: '50%' }} title="Editar">
+                              <button onClick={(e) => { e.stopPropagation(); setSelectedTaskId(task.id); setShowEditTask(true); }} className="btn-secondary" style={{ padding: '0.4rem', borderRadius: '50%' }} title="Editar">
                                 <Edit2 size={14} />
                               </button>
                               <button onClick={() => completeTask(task.id)} className="btn-primary" style={{ padding: '0.4rem', borderRadius: '50%' }} title="Marcar completada">
@@ -236,25 +280,19 @@ const StudentDashboard = () => {
                     </div>
                   </div>
                 )}
+                
+                {futureTasks.length > 0 && (
+                  <div style={{ textAlign: 'center', marginTop: '0.5rem', paddingBottom: '0.5rem' }}>
+                    <button onClick={() => navigate('/tareas')} className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', width: '100%' }}>
+                      Ver {futureTasks.length} {futureTasks.length === 1 ? 'tarea posterior' : 'tareas posteriores'}
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })()}
         </div>
 
-      </div>
-
-      {/* Acciones Rápidas (Gestión Académica) Moviendo abajo de las dos principales */}
-      <div className="glass-panel p-4 mt-4" style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
-        <h2 className="section-title w-full text-center" style={{ width: '100%' }}><Plus size={20} /> Gestión Académica Rápida</h2>
-        <button onClick={() => navigate('/materia/nueva')} className="btn-primary" style={{ flex: '1 1 200px' }}>
-          <PlusCircle size={18} /> Registrar Materia
-        </button>
-        <button onClick={() => navigate('/tarea/nueva')} className="btn-secondary" style={{ flex: '1 1 200px' }}>
-          <CheckSquare size={18} /> Añadir Tarea
-        </button>
-        <button onClick={() => navigate('/calificacion/nueva')} className="btn-secondary" style={{ flex: '1 1 200px' }}>
-          <Calculator size={18} /> Ingresar Calificación
-        </button>
       </div>
 
       <div className="glass-panel p-4 mt-4" style={{ marginTop: '2rem' }}>
@@ -279,7 +317,7 @@ const StudentDashboard = () => {
                   return (
                     <tr 
                       key={s.id}
-                      onClick={() => navigate(`/materia/ver/${s.id}`)}
+                      onClick={() => { setSelectedSubjectId(s.id); setShowSubjectView(true); }}
                       style={{ cursor: 'pointer' }}
                     >
                       <td style={{ fontWeight: '600' }}>
@@ -327,6 +365,32 @@ const StudentDashboard = () => {
           </div>
         )}
       </div>
+      <AddSubject 
+        isOpen={showAddSubject} 
+        onClose={() => setShowAddSubject(false)} 
+        onSuccess={fetchData} 
+      />
+      <AddTask 
+        isOpen={showAddTask} 
+        onClose={() => setShowAddTask(false)} 
+        onSuccess={fetchData} 
+      />
+      <AddPartialGrade 
+        isOpen={showAddGrade} 
+        onClose={() => setShowAddGrade(false)} 
+        onSuccess={fetchData} 
+      />
+      <SubjectView 
+        isOpen={showSubjectView} 
+        onClose={() => setShowSubjectView(false)} 
+        subjectId={selectedSubjectId} 
+      />
+      <EditTask 
+        isOpen={showEditTask} 
+        onClose={() => setShowEditTask(false)} 
+        onSuccess={fetchData} 
+        taskId={selectedTaskId} 
+      />
     </div>
   );
 };
