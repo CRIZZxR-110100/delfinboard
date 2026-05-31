@@ -13,7 +13,6 @@ const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [pendingStudents, setPendingStudents] = useState([]);
   const [showPendingModal, setShowPendingModal] = useState(false);
@@ -60,7 +59,6 @@ const Layout = () => {
   };
 
   const closeMenus = () => {
-    setDrawerOpen(false);
     setDropdownOpen(false);
   };
 
@@ -83,9 +81,6 @@ const Layout = () => {
       {/* Navbar que topa a las orillas */}
       <nav className="navbar">
         <div className="navbar-left">
-          <button className="icon-btn" onClick={() => setDrawerOpen(true)}>
-            <Menu size={24} />
-          </button>
           <div className="navbar-brand" style={{ userSelect: 'none' }}>
             <span className="brand-logo"><GraduationCap size={24} /></span>
             <span className="brand-text">DelfinBoard</span>
@@ -134,44 +129,6 @@ const Layout = () => {
           </div>
         </div>
       </nav>
-
-      {/* Menú Lateral Hamburgesa (Drawer) */}
-      <div className={`drawer-overlay ${isDrawerOpen ? 'open' : ''}`} onClick={closeMenus}></div>
-      <div className={`sidebar-drawer glass-panel ${isDrawerOpen ? 'open' : ''}`}>
-        <div className="drawer-header">
-          <span className="brand-text" style={{ fontSize: '1.25rem' }}>Menú Principal</span>
-          <button className="icon-btn" onClick={() => setDrawerOpen(false)}>
-            <X size={24} />
-          </button>
-        </div>
-        <div className="drawer-links">
-          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} onClick={closeMenus}>
-            <Home size={20} /> Dashboard
-          </Link>
-
-          {user?.role === 'student' && (
-            <>
-              <Link to="/materias" className={`nav-link ${location.pathname.startsWith('/materia') ? 'active' : ''}`} onClick={closeMenus}>
-                <BookOpen size={20} /> Materias
-              </Link>
-              <Link to="/tareas" className={`nav-link ${location.pathname.startsWith('/tarea') ? 'active' : ''}`} onClick={closeMenus}>
-                <CheckSquare size={20} /> Tareas
-              </Link>
-            </>
-          )}
-
-          {user?.role === 'tutor' && (
-            <>
-              <Link to="/tutor/alumnos" className={`nav-link ${location.pathname.startsWith('/tutor/alumnos') ? 'active' : ''}`} onClick={closeMenus}>
-                <Users size={20} /> Tutorados
-              </Link>
-              <Link to="/tutor/materias" className={`nav-link ${location.pathname.startsWith('/tutor/materias') ? 'active' : ''}`} onClick={closeMenus}>
-                <BookOpen size={20} /> Materias del Semestre
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
 
       <main className="main-content" onClick={() => isDropdownOpen && setDropdownOpen(false)}>
         <Outlet />

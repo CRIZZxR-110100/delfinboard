@@ -43,7 +43,7 @@ export async function requestNotificationPermissionAndSubscribe() {
     });
 
     // Enviar la suscripción al backend
-    const response = await fetch(`${API_URL}/users/notifications/subscribe`, {
+    const response = await fetch(`${API_URL}/user/notifications/subscribe`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(subscription)

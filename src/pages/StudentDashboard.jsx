@@ -11,6 +11,7 @@ import AddTask from './AddTask';
 import AddPartialGrade from './AddPartialGrade';
 import SubjectView from './SubjectView';
 import EditTask from './EditTask';
+import TasksList from './TasksList';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ const StudentDashboard = () => {
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [showEditTask, setShowEditTask] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [showAllTasksModal, setShowAllTasksModal] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -190,7 +192,7 @@ const StudentDashboard = () => {
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '200px', gap: '1rem' }}>
                   <p className="text-muted text-center" style={{ margin: 0 }}>No hay tareas próximas (en las siguientes 2 semanas).</p>
                   {futureTasks.length > 0 && (
-                    <button onClick={() => navigate('/tareas')} className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+                    <button onClick={() => setShowAllTasksModal(true)} className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
                       Ver {futureTasks.length} {futureTasks.length === 1 ? 'tarea posterior' : 'tareas posteriores'}
                     </button>
                   )}
@@ -283,7 +285,7 @@ const StudentDashboard = () => {
                 
                 {futureTasks.length > 0 && (
                   <div style={{ textAlign: 'center', marginTop: '0.5rem', paddingBottom: '0.5rem' }}>
-                    <button onClick={() => navigate('/tareas')} className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', width: '100%' }}>
+                    <button onClick={() => setShowAllTasksModal(true)} className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', width: '100%' }}>
                       Ver {futureTasks.length} {futureTasks.length === 1 ? 'tarea posterior' : 'tareas posteriores'}
                     </button>
                   </div>
@@ -390,6 +392,11 @@ const StudentDashboard = () => {
         onClose={() => setShowEditTask(false)} 
         onSuccess={fetchData} 
         taskId={selectedTaskId} 
+      />
+      <TasksList 
+        asModal={true} 
+        isOpen={showAllTasksModal} 
+        onClose={() => { setShowAllTasksModal(false); fetchData(); }} 
       />
     </div>
   );

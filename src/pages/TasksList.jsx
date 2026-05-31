@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { academicAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
-import { CheckSquare, PlusSquare, Edit2, Loader2, Calendar } from 'lucide-react';
+import { CheckSquare, PlusSquare, Edit2, Loader2, Calendar, X } from 'lucide-react';
 import AddTask from './AddTask';
 import EditTask from './EditTask';
 
-const TasksList = () => {
+const TasksList = ({ asModal = false, isOpen, onClose }) => {
   const [tasks, setTasks] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,8 +18,10 @@ const TasksList = () => {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!asModal || isOpen) {
+      fetchData();
+    }
+  }, [isOpen, asModal]);
 
   const fetchData = async () => {
     try {
@@ -46,8 +49,15 @@ const TasksList = () => {
     }
   };
 
-  return (
-    <div className="dashboard fade-in">
+  if (asModal && !isOpen) return null;
+
+  const content = (
+    <div className="dashboard fade-in" style={asModal ? { padding: '2rem', height: '100%', overflowY: 'auto' } : {}}>
+      {asModal && (
+        <button className="icon-btn" onClick={onClose} style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+          <X size={20} />
+        </button>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -125,6 +135,19 @@ const TasksList = () => {
       />
     </div>
   );
+
+  if (asModal) {
+    return createPortal(
+      <div className="modal-overlay fade-in" onClick={onClose} style={{ zIndex: 9999 }}>
+        <div className="modal glass-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px', width: '100%', height: '80vh', padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {content}
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  return content;
 };
 
 export default TasksList;

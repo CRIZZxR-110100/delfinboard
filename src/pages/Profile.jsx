@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Loader2, Save, Bell } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Mail, Loader2, Save, Bell, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { requestNotificationPermissionAndSubscribe } from '../utils/notifications';
@@ -8,6 +9,7 @@ import './Profile.css';
 const Profile = () => {
   const { user, updateProfile } = useAuth();
   const { addToast } = useToast();
+  const navigate = useNavigate();
   
   const [formData, setFormData] = useState({ name: '', email: '' });
   const [isEditing, setIsEditing] = useState(false);
@@ -56,6 +58,11 @@ const Profile = () => {
 
   return (
     <div className="profile-container fade-in">
+      <div style={{ width: '100%', maxWidth: '600px', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
+        <button className="btn-secondary" onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}>
+          <ArrowLeft size={18} /> Volver al Tablero
+        </button>
+      </div>
       <div className="profile-card glass-panel">
         <div className="profile-header">
           <div className="profile-avatar">
