@@ -201,3 +201,29 @@ h2 {
     transform: translateY(0);
   }
 }
+
+/* RESPONSIVIDAD GLOBAL (MOBILE) */
+@media (max-width: 768px) {
+  .modal {
+    padding: 1.5rem !important;
+    width: 95vw !important;
+    max-height: 90vh !important;
+  }
+  
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+  
+  .btn-primary, .btn-secondary {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .input-field {
+    padding: 0.6rem 0.8rem;
+  }
+}

@@ -58,7 +58,7 @@ const TasksList = ({ asModal = false, isOpen, onClose }) => {
           <X size={20} />
         </button>
       )}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <CheckSquare size={28} color="hsl(var(--primary))" /> Gestión de Tareas
@@ -89,7 +89,7 @@ const TasksList = ({ asModal = false, isOpen, onClose }) => {
                 
                 return (
                   <div key={task.id} style={{ 
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                    display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
                     background: 'hsl(var(--bg-base))', padding: '1rem', borderRadius: 'var(--radius-md)',
                     opacity: isCompleted ? 0.6 : 1, transition: 'all 0.2s'
                   }}>

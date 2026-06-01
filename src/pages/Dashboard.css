@@ -336,4 +336,29 @@
   .tutor-viewport-table-container {
     min-height: 300px; /* Mostrar más alumnos a la vez sin tanto scroll en celular */
   }
+
+  .stat-card {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .glass-panel {
+    padding: 1rem !important;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    flex-wrap: wrap;
+  }
+
+  /* Ajustar filas de tareas y listados para que no desborden o se apilen mejor */
+  .task-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .task-actions {
+    align-self: flex-end;
+  }
 }

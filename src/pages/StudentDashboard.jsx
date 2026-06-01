@@ -231,7 +231,7 @@ const StudentDashboard = () => {
                         const subj = subjects.find(s => s.id === task.subjectId);
                         const timeString = task.dueDateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
                         return (
-                          <div key={task.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--bg-base))', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                          <div key={task.id} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', background: 'hsl(var(--bg-base))', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
                             <div>
                               <p style={{ margin: 0, fontWeight: '600', fontSize: '0.95rem' }}>{task.title}</p>
                               <small className="text-muted" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
