@@ -4,9 +4,19 @@ import { useAuth } from '../context/AuthContext';
 import { tutorAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line, CartesianGrid } from 'recharts';
-import { Users, AlertTriangle, BookOpen, Send, AlertOctagon, X, User, TrendingUp, CheckCircle } from 'lucide-react';
+import { Users, AlertTriangle, BookOpen, Send, AlertOctagon, X, User, TrendingUp, CheckCircle, Download, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import TutorReportTemplate from '../components/TutorReportTemplate';
 import './Dashboard.css';
+
+const EmptyState = ({ text }) => (
+  <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', textAlign: 'center' }}>
+    <BookOpen size={32} style={{ color: 'hsla(var(--text-muted), 0.3)', marginBottom: '0.75rem' }} />
+    <p className="text-muted" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{text}</p>
+  </div>
+);
 
 const TutorDashboard = () => {
   const { user } = useAuth();
@@ -21,7 +31,9 @@ const TutorDashboard = () => {
   const [activeStatModal, setActiveStatModal] = useState(null); // 'risk'
   const [activeChartModal, setActiveChartModal] = useState(false);
   const [chartModalData, setChartModalData] = useState({ title: '', students: [], type: '', dataKey: '' });
+  const [generatingPDF, setGeneratingPDF] = useState(false);
   const navigate = useNavigate();
+  const reportRef = React.useRef(null);
 
   useEffect(() => {
     fetchData();
@@ -98,6 +110,38 @@ const TutorDashboard = () => {
     setActiveChartModal(true);
   };
 
+  const handleDownloadPDF = async () => {
+    if (!reportRef.current) return;
+    setGeneratingPDF(true);
+    
+    try {
+      // jsPDF format: 'letter' (8.5 x 11 inches) -> 612 x 792 points
+      const doc = new jsPDF({ format: 'letter', orientation: 'portrait' });
+      
+      const sections = reportRef.current.querySelectorAll('.pdf-section');
+      
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i];
+        const canvas = await html2canvas(section, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/png');
+        
+        const pdfWidth = doc.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        if (i > 0) doc.addPage();
+        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      }
+      
+      doc.save(`Reporte_Tutorados_${new Date().toISOString().split('T')[0]}.pdf`);
+      addToast('Reporte generado exitosamente', 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Error al generar el PDF', 'error');
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
   if (loading) return <div className="p-4 text-center">Cargando métricas...</div>;
 
   // Calculos Analíticos Locales de Frontend
@@ -118,22 +162,22 @@ const TutorDashboard = () => {
   const hasFailed = stats?.failedSubjectsDistribution?.some(f => f.value > 0);
   const hasPerformance = stats?.performanceEvolution?.length > 0;
 
-  const EmptyState = ({ text }) => (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', textAlign: 'center' }}>
-      <BookOpen size={32} style={{ color: 'hsla(var(--text-muted), 0.3)', marginBottom: '0.75rem' }} />
-      <p className="text-muted" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{text}</p>
-    </div>
-  );
-
   return (
     <div className="tutor-viewport-container fade-in">
-      <header className="tutor-viewport-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h1 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>DelfinBoard Tutor</h1>
-            <p className="text-muted" style={{ fontSize: '0.9rem' }}>Análisis global y seguimiento académico de tutorados del semestre.</p>
-          </div>
+      <header className="tutor-viewport-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>DelfinBoard Tutor</h1>
+          <p className="text-muted" style={{ fontSize: '0.9rem' }}>Análisis global y seguimiento académico de tutorados del semestre.</p>
         </div>
+        <button 
+          className="btn-primary" 
+          onClick={handleDownloadPDF} 
+          disabled={generatingPDF}
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {generatingPDF ? <Loader2 size={18} className="spinner" /> : <Download size={18} />}
+          {generatingPDF ? 'Generando...' : 'Descargar Reporte PDF'}
+        </button>
       </header>
 
       <div className="tutor-viewport-stats">
@@ -486,6 +530,13 @@ const TutorDashboard = () => {
         </div>
       , document.body)}
 
+      {/* Componente Oculto para Renderizar el PDF (Independiente del Viewport) */}
+      <TutorReportTemplate 
+        ref={reportRef} 
+        stats={stats} 
+        students={students} 
+        tutorName={user?.name} 
+      />
     </div>
   );
 };
