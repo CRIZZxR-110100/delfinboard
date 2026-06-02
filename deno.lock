@@ -10,7 +10,6 @@
     "npm:eslint@^9.39.4": "9.39.4",
     "npm:globals@^17.4.0": "17.5.0",
     "npm:html2canvas@^1.4.1": "1.4.1",
-    "npm:html2pdf@^0.0.11": "0.0.11",
     "npm:jspdf@^4.2.1": "4.2.1",
     "npm:lucide-react@^1.8.0": "1.8.0_react@19.2.5",
     "npm:react-dom@^19.2.4": "19.2.5_react@19.2.5",
@@ -869,9 +868,6 @@
         "text-segmentation"
       ]
     },
-    "html2pdf@0.0.11": {
-      "integrity": "sha512-Kx3I5r7lazHZzZv5lDk59jQoTxqaEGlf2BcGNvzWGPQVu0hE8jYCk4hboksuaCvmMJPa0S0A+156ZbE71Wdo2w=="
-    },
     "ignore@5.3.2": {
       "integrity": "sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g=="
     },
@@ -1416,7 +1412,6 @@
         "npm:eslint@^9.39.4",
         "npm:globals@^17.4.0",
         "npm:html2canvas@^1.4.1",
-        "npm:html2pdf@^0.0.11",
         "npm:jspdf@^4.2.1",
         "npm:lucide-react@^1.8.0",
         "npm:react-dom@^19.2.4",

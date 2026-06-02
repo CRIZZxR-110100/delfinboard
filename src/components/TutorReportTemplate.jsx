@@ -41,7 +41,7 @@ const TutorReportTemplate = forwardRef(({ stats, students, tutorName }, ref) => 
   );
 
   return (
-    <div ref={ref} style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
+    <div id="pdf-wrapper" ref={ref} style={{ position: 'absolute', top: 0, left: 0, zIndex: -9999, visibility: 'hidden', pointerEvents: 'none' }}>
       
       {/* SECCIÓN 1: Encabezado y Gráficas */}
       <Section>
@@ -207,6 +207,59 @@ const TutorReportTemplate = forwardRef(({ stats, students, tutorName }, ref) => 
                   <td style={{ padding: '8px', textAlign: 'center' }}>{s.taskStats?.completed || 0}</td>
                   <td style={{ padding: '8px', textAlign: 'center' }}>Excelente</td>
                 </tr>
+              ))}
+            </tbody>
+          </table>
+        </Section>
+      ))}
+
+      {/* SECCIÓN 5: Desglose de Materias por Alumno */}
+      {chunkArray(students, 6).map((chunk, i, arr) => (
+        <Section key={`desglose-${i}`}>
+          <h2 style={{ fontSize: '18px', marginBottom: '15px', color: '#333' }}>
+            Desglose de Materias por Alumno {arr.length > 1 ? `(Pág. ${i + 1}/${arr.length})` : ''}
+          </h2>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+                <th style={{ padding: '8px', textAlign: 'left' }}>Alumno / Materia</th>
+                <th style={{ padding: '8px', textAlign: 'center' }}>Promedio / Calificación</th>
+                <th style={{ padding: '8px', textAlign: 'center' }}>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {chunk.length === 0 ? <tr><td colSpan="3" style={{ textAlign:'center', padding:'20px' }}>Sin datos</td></tr> : null}
+              {chunk.map((s) => (
+                <React.Fragment key={s.id}>
+                  {/* Fila Principal del Tutorado */}
+                  <tr style={{ backgroundColor: '#eef2f5', borderTop: '2px solid #ccc' }}>
+                    <td style={{ padding: '8px', fontWeight: 'bold', color: '#2c3e50' }}>Tutorado: {s.name}</td>
+                    <td style={{ padding: '8px', textAlign: 'center', fontWeight: 'bold', color: '#2c3e50' }}>Promedio Gral: {s.average}</td>
+                    <td style={{ padding: '8px', textAlign: 'center', fontWeight: 'bold', color: '#2c3e50' }}>{s.academicStatus}</td>
+                  </tr>
+                  {/* Filas de sus Materias */}
+                  {s.subjectsDetail && s.subjectsDetail.length > 0 ? (
+                    s.subjectsDetail.map((subj, sIdx) => (
+                      <tr key={`${s.id}-subj-${sIdx}`} style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ padding: '6px 8px 6px 30px', color: '#555' }}>↳ {subj.subject}</td>
+                        <td style={{ padding: '6px 8px', textAlign: 'center' }}>{subj.grade}</td>
+                        <td style={{ padding: '6px 8px', textAlign: 'center' }}>
+                          <span style={{ 
+                            padding: '2px 6px', borderRadius: '4px', fontSize: '11px',
+                            backgroundColor: subj.status === 'reprobada' ? '#fdf3f2' : subj.status === 'aprobada' ? '#f2fcf5' : '#fff8e6',
+                            color: subj.status === 'reprobada' ? '#e74c3c' : subj.status === 'aprobada' ? '#27ae60' : '#f39c12'
+                          }}>
+                            {subj.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr style={{ borderBottom: '1px solid #eee' }}>
+                      <td colSpan="3" style={{ padding: '6px 8px 6px 30px', color: '#999', fontStyle: 'italic' }}>Sin materias registradas en este momento.</td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>

@@ -6,9 +6,7 @@ import { useToast } from '../context/ToastContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line, CartesianGrid } from 'recharts';
 import { Users, AlertTriangle, BookOpen, Send, AlertOctagon, X, User, TrendingUp, CheckCircle, Download, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import TutorReportTemplate from '../components/TutorReportTemplate';
+import { generateTutorPDF } from '../utils/generateTutorPDF';
 import './Dashboard.css';
 
 const EmptyState = ({ text }) => (
@@ -33,7 +31,6 @@ const TutorDashboard = () => {
   const [chartModalData, setChartModalData] = useState({ title: '', students: [], type: '', dataKey: '' });
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const navigate = useNavigate();
-  const reportRef = React.useRef(null);
 
   useEffect(() => {
     fetchData();
@@ -111,32 +108,13 @@ const TutorDashboard = () => {
   };
 
   const handleDownloadPDF = async () => {
-    if (!reportRef.current) return;
     setGeneratingPDF(true);
-    
     try {
-      // jsPDF format: 'letter' (8.5 x 11 inches) -> 612 x 792 points
-      const doc = new jsPDF({ format: 'letter', orientation: 'portrait' });
-      
-      const sections = reportRef.current.querySelectorAll('.pdf-section');
-      
-      for (let i = 0; i < sections.length; i++) {
-        const section = sections[i];
-        const canvas = await html2canvas(section, { scale: 2, useCORS: true });
-        const imgData = canvas.toDataURL('image/png');
-        
-        const pdfWidth = doc.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        if (i > 0) doc.addPage();
-        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      }
-      
-      doc.save(`Reporte_Tutorados_${new Date().toISOString().split('T')[0]}.pdf`);
+      generateTutorPDF(stats, students, user?.name);
       addToast('Reporte generado exitosamente', 'success');
     } catch (err) {
       console.error(err);
-      addToast('Error al generar el PDF', 'error');
+      addToast(`Error PDF: ${err.message || err.toString()}`, 'error');
     } finally {
       setGeneratingPDF(false);
     }
@@ -529,14 +507,6 @@ const TutorDashboard = () => {
           </div>
         </div>
       , document.body)}
-
-      {/* Componente Oculto para Renderizar el PDF (Independiente del Viewport) */}
-      <TutorReportTemplate 
-        ref={reportRef} 
-        stats={stats} 
-        students={students} 
-        tutorName={user?.name} 
-      />
     </div>
   );
 };
