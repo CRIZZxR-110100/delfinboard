@@ -34,7 +34,7 @@ const TutorDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
 
-  const POLL_INTERVAL_MS = 45000; // 45 segundos
+  const POLL_INTERVAL_MS = 5000; // 45 segundos
 
   useEffect(() => {
     fetchData();
