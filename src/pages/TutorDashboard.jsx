@@ -30,24 +30,35 @@ const TutorDashboard = () => {
   const [activeChartModal, setActiveChartModal] = useState(false);
   const [chartModalData, setChartModalData] = useState({ title: '', students: [], type: '', dataKey: '' });
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
+
+  const POLL_INTERVAL_MS = 45000; // 45 segundos
 
   useEffect(() => {
     fetchData();
+    const interval = setInterval(() => {
+      fetchData(true); // silent refresh
+    }, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (silent = false) => {
     try {
+      if (silent) setRefreshing(true);
       const [statsData, studentsData] = await Promise.all([
         tutorAPI.getDashboardStats(),
         tutorAPI.getStudentsList()
       ]);
       setStats(statsData);
       setStudents(studentsData);
+      setLastUpdated(new Date());
     } catch (err) {
-      addToast(err.message, 'error');
+      if (!silent) addToast(err.message, 'error');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -146,6 +157,17 @@ const TutorDashboard = () => {
         <div>
           <h1 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>DelfinBoard Tutor</h1>
           <p className="text-muted" style={{ fontSize: '0.9rem' }}>Análisis global y seguimiento académico de tutorados del semestre.</p>
+          {lastUpdated && (
+            <p style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              {refreshing
+                ? <><Loader2 size={11} className="spinner" /> Actualizando datos...</>
+                : <>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: 'hsl(142, 71%, 45%)', display: 'inline-block', animation: 'pulse 2s infinite' }} />
+                    Actualizado {lastUpdated.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} · Auto-sync cada 45s
+                  </>
+              }
+            </p>
+          )}
         </div>
         <button 
           className="btn-primary" 
