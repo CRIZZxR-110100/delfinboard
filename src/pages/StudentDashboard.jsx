@@ -327,13 +327,13 @@ const StudentDashboard = () => {
                       </td>
                       <td>
                         <span className="text-muted" style={{ fontWeight: 500 }}>
-                          {s.partials ? s.partials.filter(p => p.grade !== null).length : 0} / {s.totalPartials} evaluados
+                          {s.totalPartials} secuencias
                         </span>
                       </td>
                       <td><strong>{s.finalGrade} / 100</strong></td>
                       <td>
                         {!isFinished && s.finalGrade < 70 ? (
-                          <span className="badge" style={{ background: 'hsl(var(--primary))', color: '#fff', display: 'inline-block', textAlign: 'left' }}>EN CURSO ({s.partials?.length || 0}/{s.totalPartials})</span>
+                          <span className="badge" style={{ background: 'hsl(var(--primary))', color: '#fff', display: 'inline-block', textAlign: 'left' }}>EN CURSO</span>
                         ) : (
                           <span className={`badge ${isApproved ? 'badge-success' : 'badge-danger'}`} style={{ display: 'inline-block', textAlign: 'left' }}>
                             {isApproved ? 'APROBADA' : 'REPROBADA'}
