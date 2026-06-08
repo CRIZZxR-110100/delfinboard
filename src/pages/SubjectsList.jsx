@@ -79,7 +79,7 @@ const SubjectsList = () => {
                       <td style={{ fontWeight: '600', color: 'hsl(var(--text-main))' }}>
                         {sub.name}
                       </td>
-                      <td>{capturedCount} / {sub.totalPartials} secuencias</td>
+                      <td>{sub.totalPartials} secuencias</td>
                       <td><strong>{sub.finalGrade} pto</strong></td>
                       <td>
                         {!isFinished && sub.finalGrade < 70 ? (
