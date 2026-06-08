@@ -164,17 +164,7 @@ const TutorDashboard = () => {
         <div>
           <h1 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>DelfinBoard Tutor</h1>
           <p className="text-muted" style={{ fontSize: '0.9rem' }}>Análisis global y seguimiento académico de tutorados del semestre.</p>
-          {lastUpdated && (
-            <p style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              {refreshing
-                ? <><Loader2 size={11} className="spinner" /> Actualizando datos...</>
-                : <>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: 'hsl(142, 71%, 45%)', display: 'inline-block', animation: 'pulse 2s infinite' }} />
-                  Actualizado {lastUpdated.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                </>
-              }
-            </p>
-          )}
+
         </div>
         <button
           className="btn-primary"
