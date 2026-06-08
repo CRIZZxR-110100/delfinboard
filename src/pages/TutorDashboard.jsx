@@ -33,8 +33,15 @@ const TutorDashboard = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const POLL_INTERVAL_MS = 5000; // 45 segundos
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const POLL_INTERVAL_MS = 5000;
 
   useEffect(() => {
     fetchData();
@@ -162,16 +169,16 @@ const TutorDashboard = () => {
               {refreshing
                 ? <><Loader2 size={11} className="spinner" /> Actualizando datos...</>
                 : <>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: 'hsl(142, 71%, 45%)', display: 'inline-block', animation: 'pulse 2s infinite' }} />
-                    Actualizado {lastUpdated.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} · Auto-sync cada 45s
-                  </>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: 'hsl(142, 71%, 45%)', display: 'inline-block', animation: 'pulse 2s infinite' }} />
+                  Actualizado {lastUpdated.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </>
               }
             </p>
           )}
         </div>
-        <button 
-          className="btn-primary" 
-          onClick={handleDownloadPDF} 
+        <button
+          className="btn-primary"
+          onClick={handleDownloadPDF}
           disabled={generatingPDF}
           style={{ whiteSpace: 'nowrap' }}
         >
@@ -181,9 +188,9 @@ const TutorDashboard = () => {
       </header>
 
       <div className="tutor-viewport-stats">
-        <div 
-          className="stat-card glass-panel" 
-          style={{ cursor: 'pointer', transition: 'all 0.2s', padding: '1rem' }} 
+        <div
+          className="stat-card glass-panel"
+          style={{ cursor: 'pointer', transition: 'all 0.2s', padding: '1rem' }}
           onClick={() => navigate('/tutor/alumnos')}
           onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -197,9 +204,9 @@ const TutorDashboard = () => {
           </div>
         </div>
 
-        <div 
-          className="stat-card glass-panel" 
-          style={{ cursor: 'pointer', transition: 'all 0.2s', padding: '1rem' }} 
+        <div
+          className="stat-card glass-panel"
+          style={{ cursor: 'pointer', transition: 'all 0.2s', padding: '1rem' }}
           onClick={() => setActiveStatModal('risk')}
           onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -213,9 +220,9 @@ const TutorDashboard = () => {
           </div>
         </div>
 
-        <div 
-          className="stat-card glass-panel" 
-          style={{ cursor: 'pointer', transition: 'all 0.2s', padding: '1rem' }} 
+        <div
+          className="stat-card glass-panel"
+          style={{ cursor: 'pointer', transition: 'all 0.2s', padding: '1rem' }}
           onClick={() => navigate('/tutor/materias')}
           onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -286,17 +293,24 @@ const TutorDashboard = () => {
           <div className="tutor-viewport-content">
             {hasGrades ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats?.gradeDistribution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
-                  <YAxis tick={{ fontSize: 10 }} />
+                <BarChart data={stats?.gradeDistribution || []} margin={{ top: 5, right: 5, left: isMobile ? -28 : -20, bottom: isMobile ? 32 : 0 }}>
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: isMobile ? 9 : 10 }}
+                    interval={0}
+                    angle={isMobile ? -35 : 0}
+                    textAnchor={isMobile ? 'end' : 'middle'}
+                    tickFormatter={(v) => isMobile ? v.replace(/ \(.*\)/, '') : v}
+                  />
+                  <YAxis tick={{ fontSize: 10 }} width={28} />
                   <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Frecuencia']} />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                     {stats?.gradeDistribution?.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.color} 
-                        className="interactive-chart-element" 
-                        onClick={() => handleChartClick('grades', entry)} 
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        className="interactive-chart-element"
+                        onClick={() => handleChartClick('grades', entry)}
                       />
                     ))}
                   </Bar>
@@ -314,19 +328,25 @@ const TutorDashboard = () => {
           <div className="tutor-viewport-content">
             {riskData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={riskData} innerRadius="50%" outerRadius="80%" paddingAngle={5} dataKey="value">
+                <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                  <Pie
+                    data={riskData}
+                    innerRadius={isMobile ? '38%' : '50%'}
+                    outerRadius={isMobile ? '62%' : '78%'}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
                     {riskData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.color} 
-                        className="interactive-chart-element" 
-                        onClick={() => handleChartClick('risk', entry)} 
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        className="interactive-chart-element"
+                        onClick={() => handleChartClick('risk', entry)}
                       />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Tutorados']} />
-                  <Legend verticalAlign="bottom" height={24} iconSize={10} wrapperStyle={{ fontSize: '0.8rem' }} />
+                  <Legend verticalAlign="bottom" height={30} iconSize={9} wrapperStyle={{ fontSize: '0.72rem' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -361,17 +381,24 @@ const TutorDashboard = () => {
           <div className="tutor-viewport-content">
             {hasFailed ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats?.failedSubjectsDistribution || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
-                  <YAxis tick={{ fontSize: 10 }} />
+                <BarChart data={stats?.failedSubjectsDistribution || []} margin={{ top: 5, right: 5, left: isMobile ? -28 : -20, bottom: isMobile ? 30 : 0 }}>
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: isMobile ? 9 : 10 }}
+                    interval={0}
+                    angle={isMobile ? -30 : 0}
+                    textAnchor={isMobile ? 'end' : 'middle'}
+                    tickFormatter={(v) => isMobile ? v.replace(/ Reprobada.*/, ' Rep.').replace('0 Reprobadas', '0 Rep.') : v}
+                  />
+                  <YAxis tick={{ fontSize: 10 }} width={28} />
                   <Tooltip formatter={(value) => [`${value} Alumno(s)`, 'Cantidad']} />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                     {stats?.failedSubjectsDistribution?.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.color} 
-                        className="interactive-chart-element" 
-                        onClick={() => handleChartClick('failVolume', entry)} 
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        className="interactive-chart-element"
+                        onClick={() => handleChartClick('failVolume', entry)}
                       />
                     ))}
                   </Bar>
@@ -389,19 +416,19 @@ const TutorDashboard = () => {
           <div className="tutor-viewport-content">
             {hasTasks ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={taskDistribution} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
-                  <YAxis tick={{ fontSize: 10 }} />
+                <BarChart data={taskDistribution} margin={{ top: 5, right: 5, left: isMobile ? -28 : -20, bottom: 0 }}>
+                  <XAxis dataKey="name" tick={{ fontSize: isMobile ? 9 : 10 }} interval={0} />
+                  <YAxis tick={{ fontSize: 10 }} width={28} />
                   <Tooltip formatter={(value) => [`${value} Tareas`, 'Frecuencia']} />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                     {taskDistribution.map((entry, index) => (
-                       <Cell 
-                         key={`cell-${index}`} 
-                         fill={entry.color} 
-                         className="interactive-chart-element" 
-                         onClick={() => handleChartClick('tasks', entry)} 
-                       />
-                     ))}
+                    {taskDistribution.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        className="interactive-chart-element"
+                        onClick={() => handleChartClick('tasks', entry)}
+                      />
+                    ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -417,11 +444,11 @@ const TutorDashboard = () => {
         <div className="modal-overlay fade-in" onClick={() => setActiveStatModal(null)}>
           <div className="modal glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'hsl(var(--error))' }}><AlertTriangle size={20}/> Alumnos en Riesgo</h3>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'hsl(var(--error))' }}><AlertTriangle size={20} /> Alumnos en Riesgo</h3>
               <button className="icon-btn" onClick={() => setActiveStatModal(null)}><X size={20} /></button>
             </div>
             <p className="text-muted">Listado de tutorados con tendencia actual al fracaso o promedios estancados:</p>
-            
+
             <div style={{ marginTop: '1rem', maxHeight: '300px', overflowY: 'auto' }}>
               <ul style={{ paddingLeft: '0', listStyle: 'none', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {students.filter(s => s.academicStatus !== 'Normal').map(s => (
@@ -443,7 +470,7 @@ const TutorDashboard = () => {
             </div>
           </div>
         </div>
-      , document.body)}
+        , document.body)}
 
       {/* --- Modal Dinámico de Gráficas --- */}
       {activeChartModal && createPortal(
@@ -453,7 +480,7 @@ const TutorDashboard = () => {
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'hsl(var(--text))' }}>{chartModalData.title}</h3>
               <button className="icon-btn" onClick={() => setActiveChartModal(false)}><X size={20} /></button>
             </div>
-            
+
             <p className="text-muted text-sm mb-4">Total de alumnos en esta categoría: <strong>{chartModalData.students.length}</strong></p>
 
             <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
@@ -467,7 +494,7 @@ const TutorDashboard = () => {
                         <User size={16} style={{ color: 'hsl(var(--text-muted))' }} />
                         <strong>{s.name}</strong>
                       </div>
-                      
+
                       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         {chartModalData.type === 'tasks' && s.taskStats && (
                           <span style={{ fontSize: '0.85rem', color: 'hsl(var(--text-muted))' }}>
@@ -494,23 +521,23 @@ const TutorDashboard = () => {
                 </ul>
               )}
             </div>
-            
+
             <div className="modal-actions">
               <button type="button" className="btn-secondary" onClick={() => setActiveChartModal(false)}>Cerrar</button>
             </div>
           </div>
         </div>
-      , document.body)}
+        , document.body)}
 
       {/* --- Modal Enviar Mensaje --- */}
       {selectedStudent && createPortal(
         <div className="modal-overlay fade-in">
           <div className="modal glass-panel">
             <h3>Contactar a {selectedStudent.name}</h3>
-            <p className="text-muted text-sm mb-4">El alumno recibirá este mensaje como una alerta en su buzón de entrada. {selectedStudent.hasCriticalAlert && <strong style={{ color: 'hsl(var(--error))' }}><br/>Este alumno está a punto de ser dado de baja.</strong>}</p>
+            <p className="text-muted text-sm mb-4">El alumno recibirá este mensaje como una alerta en su buzón de entrada. {selectedStudent.hasCriticalAlert && <strong style={{ color: 'hsl(var(--error))' }}><br />Este alumno está a punto de ser dado de baja.</strong>}</p>
             <form onSubmit={handleSendMessage}>
-              <textarea 
-                className="input-field" 
+              <textarea
+                className="input-field"
                 placeholder="Escribe tu mensaje oficial aquí..."
                 value={msgContent}
                 onChange={(e) => {
@@ -528,7 +555,7 @@ const TutorDashboard = () => {
             </form>
           </div>
         </div>
-      , document.body)}
+        , document.body)}
     </div>
   );
 };
